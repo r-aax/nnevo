@@ -17,8 +17,9 @@
 %%   W - weights array,
 %%   B - bias.
 create(NNN, NN, W, B) ->
-    register(utils:neuron_atom(NNN, NN),
-             spawn(?MODULE, loop, W ++ [B])).
+    Pid = spawn(?MODULE, loop, [W ++ [B]]),
+    register(utils:neuron_atom(NNN, NN), Pid),
+    Pid.
 
 %---------------------------------------------------------------------------------------------------
 
