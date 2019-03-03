@@ -1,10 +1,10 @@
 # NNEvo
 
-# OS:
+## OS:
 
 Ubuntu 18.04.2 LTS
 
-# packages:
+## packages:
 
 Erlang/OTP 20
 
