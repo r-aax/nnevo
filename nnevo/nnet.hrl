@@ -6,5 +6,6 @@
     atom,    % atom
     flayer,  % first layer
     llayer,  % last layer
+    source,   % signal source
     osignals % output signals
 }).

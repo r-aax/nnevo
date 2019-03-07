@@ -49,9 +49,6 @@ loop(#neuron_state{atom = Atom,
         % Sense.
         {sense, From, Signal} ->
 
-            %io:format("~w: before insert ~w ~w ~w ~w~n",
-            %          [Atom, ISignals, Signal, IPids, From]),
-
             NewISignals = utils:insert_signal(ISignals, Signal, IPids, From),
             IsSignalsReady = utils:is_signals_ready(NewISignals),
 
@@ -71,9 +68,6 @@ loop(#neuron_state{atom = Atom,
         {set_pids, NewIPids, NewOPids} ->
 
             NewISignals = utils:nones(NewIPids),
-
-            %io:format("~w: IPids (~w), ISignals (~w), OPids (~w) are set~n",
-            %          [Atom, NewIPids, NewISignals, NewOPids]),
 
             loop(State#neuron_state{ipids = NewIPids,
                                     opids = NewOPids,

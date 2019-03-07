@@ -6,7 +6,8 @@
 
 -include("nnet.hrl").
 
--export([create/1, loop/1]).
+-export([create/1, loop/1,
+         sense/2]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -37,6 +38,7 @@ create(NNN) ->
         atom = Atom,
         flayer = [N00, N01],
         llayer = LLayer,
+        source = none,
         osignals = utils:nones(LLayer)
     },
     Pid = spawn(?MODULE, loop, [State]),
@@ -58,33 +60,27 @@ create(NNN) ->
 loop(#nnet_state{atom = Atom,
                  flayer = FLayer,
                  llayer = LLayer,
+                 source = Source,
                  osignals = OSignals} = State) ->
 
     % Listen.
     receive
 
         % Sense from outer world.
-        {sense, Signal} ->
-
+        {out_sense, From, Signal} ->
             utils:send_array_to_array(Signal, FLayer),
-
-            io:format("~w: ~w is sent to ~w~n", [Atom, Signal, FLayer]),
-
-            loop(State);
+            loop(State#nnet_state{source = From});
 
         % Sense from last layer.
         {sense, From, Signal} ->
-
-            %io:format("~w: before insert ~w ~w ~w ~w~n",
-            %          [Atom, OSignals, Signal, LastLayer, From]),
 
             NewOSignals = utils:insert_signal(OSignals, Signal, LLayer, From),
             IsSignalsReady = utils:is_signals_ready(NewOSignals),
 
             if
                 IsSignalsReady ->
-                    io:format("~w: out signals ~w~n", [Atom, NewOSignals]),
-                    loop(State#nnet_state{osignals = utils:nones(LLayer)});
+                    Source ! {response, self(), NewOSignals},
+                    loop(State#nnet_state{source = none, osignals = utils:nones(LLayer)});
 
                 true ->
                     loop(State#nnet_state{osignals = NewOSignals})
@@ -100,6 +96,19 @@ loop(#nnet_state{atom = Atom,
         % Neuron dies.
         Any ->
             io:format("~w: unknown command ~w~n", [Atom, Any])
+    end.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Sense neuronet.
+%%   Pid - process id,
+%%   Signal - signal.
+sense(Pid, Signal) ->
+    Pid ! {out_sense, self(), Signal},
+    receive
+        {response, Pid, Out} ->
+            Out
     end.
 
 %---------------------------------------------------------------------------------------------------
