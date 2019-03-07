@@ -16,15 +16,15 @@
 %% Create neuron.
 %%   NNN - neuronet number,
 %%   NN - neuron number,
-%%   W - weights array,
-%%   B - bias.
-create(NNN, NN, W, B) ->
+%%   Weights - weights array,
+%%   Bias - bias.
+create(NNN, NN, Weights, Bias) ->
     Atom = utils:neuron_atom(NNN, NN),
     State = #neuron_state
     {
         atom = Atom,
-        weights = W,
-        bias = B,
+        weights = Weights,
+        bias = Bias,
         ipids = [],
         opids = [],
         isignals = []
@@ -75,18 +75,17 @@ loop(#neuron_state{atom = Atom,
                                     opids = NewOPids,
                                     isignals = NewISignals});
 
-        % Add weight.
-        {add_weight, W} ->
-            loop(State#neuron_state{weights = Weights ++ [W]});
-
         % Add destination.
         {add_dst, Dst} ->
             loop(State#neuron_state{opids = OPids ++ [Dst]});
 
         % Add source.
         {add_src, Src, W} ->
-            loop(State#neuron_state{ipids = IPids ++ [Src],
-                                    weights = Weights ++ [W]});
+            NewIPids = IPids ++ [Src],
+            NewISignals = utils:nones(NewIPids),
+            loop(State#neuron_state{weights = Weights ++ [W],
+                                    ipids = NewIPids,
+                                    isignals = NewISignals});
 
         % Stop.
         stop ->

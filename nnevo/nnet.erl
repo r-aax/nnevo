@@ -81,27 +81,6 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
     {FLayer, _} = lists:split(FLayerSize, Neurons),
     LLayer = lists:nthtail(NeuronsCount - LLayerSize, Neurons),
 
-    % Set weights to first layer.
-    lists:foreach
-    (
-        fun(FLE) ->
-            FLE ! {add_weight, 1.0}
-        end,
-        FLayer
-    ),
-
-    % Set edges.
-    lists:foreach
-    (
-        fun({Src, Dst, W}) ->
-            SrcPid = lists:nth(Src + 1, Neurons),
-            DstPid = lists:nth(Dst + 1, Neurons),
-            SrcPid ! {add_dst, DstPid},
-            DstPid ! {add_src, SrcPid, W}
-        end,
-        Edges
-    ),
-
     % Spawn process.
     State = #nnet_state
     {
@@ -113,6 +92,36 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
     },
     Pid = spawn(?MODULE, loop, [State]),
     register(Atom, Pid),
+
+    % Set sources to first layer.
+    lists:foreach
+    (
+        fun(FLE) ->
+            FLE ! {add_src, Pid, 1.0}
+        end,
+        FLayer
+    ),
+
+    % Set inner edges.
+    lists:foreach
+    (
+        fun({Src, Dst, W}) ->
+            SrcPid = lists:nth(Src + 1, Neurons),
+            DstPid = lists:nth(Dst + 1, Neurons),
+            SrcPid ! {add_dst, DstPid},
+            DstPid ! {add_src, SrcPid, W}
+        end,
+        Edges
+    ),
+
+    % Set destinations for last layer.
+    lists:foreach
+    (
+        fun(LLE) ->
+            LLE ! {add_dst, Pid}
+        end,
+        LLayer
+    ),
 
     % Return pid.
     Pid.

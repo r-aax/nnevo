@@ -28,7 +28,9 @@ start() ->
             ]
         ),
     N1 = nnet:create(1),
-    io:format("check ~w == ~w~n", nnet:sense(N0, [1, 1]), nnet:sense(N1, [1, 1])),
+    X0 = nnet:sense(N0, [1, 1]),
+    X1 = nnet:sense(N1, [1, 1]),
+    io:format("check ~w == ~w~n", [X0, X1]),
     halt().
 
 %---------------------------------------------------------------------------------------------------
