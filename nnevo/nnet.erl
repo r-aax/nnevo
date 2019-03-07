@@ -37,7 +37,7 @@ create(NNN) ->
         atom = Atom,
         flayer = [N00, N01],
         llayer = LLayer,
-        osignals = lists:duplicate(length(LLayer), none)
+        osignals = utils:nones(LLayer)
     },
     Pid = spawn(?MODULE, loop, [State]),
     register(Atom, Pid),
@@ -84,7 +84,7 @@ loop(#nnet_state{atom = Atom,
             if
                 IsSignalsReady ->
                     io:format("~w: out signals ~w~n", [Atom, NewOSignals]),
-                    loop(State#nnet_state{osignals = lists:duplicate(length(LLayer), none)});
+                    loop(State#nnet_state{osignals = utils:nones(LLayer)});
 
                 true ->
                     loop(State#nnet_state{osignals = NewOSignals})

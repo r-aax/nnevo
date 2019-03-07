@@ -4,7 +4,7 @@
 % Module name.
 -module(utils).
 
--export([neuron_atom/2, nnet_atom/1,
+-export([neuron_atom/2, nnet_atom/1, nones/1,
          dot/2,
          send_one_to_array/2, send_array_to_array/2,
          insert_signal/4, is_signals_ready/1]).
@@ -37,6 +37,14 @@ neuron_atom(NNN, NN) ->
 %%   NNN - neuronert number.
 nnet_atom(NNN) ->
     (print_to_atom("nnet_~3..0w"))([NNN]).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Arrays of nones.
+%%   Arr - array.
+nones(Arr) ->
+    lists:duplicate(length(Arr), none).
 
 %---------------------------------------------------------------------------------------------------
 

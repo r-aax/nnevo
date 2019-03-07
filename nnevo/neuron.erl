@@ -70,7 +70,7 @@ loop(#neuron_state{atom = Atom,
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
 
-            NewISignals = lists:duplicate(length(NewIPids), none),
+            NewISignals = utils:nones(NewIPids),
 
             %io:format("~w: IPids (~w), ISignals (~w), OPids (~w) are set~n",
             %          [Atom, NewIPids, NewISignals, NewOPids]),
