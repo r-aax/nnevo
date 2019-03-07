@@ -28,7 +28,7 @@ print_to_atom(F) ->
 %%   NNN - neuronet Number,
 %%   NN - neuron Number
 neuron_atom(NNN, NN) ->
-    (print_to_atom("neuron_~3..0w_~3..0w"))([NNN, NN]).
+    (print_to_atom("neuron_~5..0w_~5..0w"))([NNN, NN]).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -36,7 +36,7 @@ neuron_atom(NNN, NN) ->
 %% Neuronet atom.
 %%   NNN - neuronert number.
 nnet_atom(NNN) ->
-    (print_to_atom("nnet_~3..0w"))([NNN]).
+    (print_to_atom("nnet_~5..0w"))([NNN]).
 
 %---------------------------------------------------------------------------------------------------
 

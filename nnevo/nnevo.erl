@@ -13,12 +13,22 @@
 %% @doc
 %% Start function.
 start() ->
-    io:format("NNEVO start.~n"),
-    io:format("  one~n"),
-    io:format("  two~n"),
-    io:format("  three~n"),
-    io:format("  four~n"),
-    io:format("  five~n"),
+    N0 =
+        nnet:create
+        (
+            0,
+            lists:duplicate(4, 2.0),
+            2,
+            2,
+            [
+                {0, 2, 1.0},
+                {0, 3, 1.0},
+                {1, 2, 1.0},
+                {1, 3, 1.0}
+            ]
+        ),
+    N1 = nnet:create(1),
+    io:format("check ~w == ~w~n", nnet:sense(N0, [1, 1]), nnet:sense(N1, [1, 1])),
     halt().
 
 %---------------------------------------------------------------------------------------------------

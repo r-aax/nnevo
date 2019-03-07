@@ -23,7 +23,8 @@ create(NNN, NN, W, B) ->
     State = #neuron_state
     {
         atom = Atom,
-        weights = W ++ [B],
+        weights = W,
+        bias = B,
         ipids = [],
         opids = [],
         isignals = []
@@ -39,6 +40,7 @@ create(NNN, NN, W, B) ->
 %%   State - neuron state.
 loop(#neuron_state{atom = Atom,
                    weights = Weights,
+                   bias = Bias,
                    ipids = IPids,
                    opids = OPids,
                    isignals = ISignals} = State) ->
@@ -54,7 +56,7 @@ loop(#neuron_state{atom = Atom,
 
             if
                 IsSignalsReady ->
-                    Dot = utils:dot(NewISignals, Weights),
+                    Dot = utils:dot(NewISignals, Weights ++ [Bias]),
                     Out = math:tanh(Dot),
                     utils:send_one_to_array(Out, OPids);
 
@@ -72,6 +74,19 @@ loop(#neuron_state{atom = Atom,
             loop(State#neuron_state{ipids = NewIPids,
                                     opids = NewOPids,
                                     isignals = NewISignals});
+
+        % Add weight.
+        {add_weight, W} ->
+            loop(State#neuron_state{weights = Weights ++ [W]});
+
+        % Add destination.
+        {add_dst, Dst} ->
+            loop(State#neuron_state{opids = OPids ++ [Dst]});
+
+        % Add source.
+        {add_src, Src, W} ->
+            loop(State#neuron_state{ipids = IPids ++ [Src],
+                                    weights = Weights ++ [W]});
 
         % Stop.
         stop ->

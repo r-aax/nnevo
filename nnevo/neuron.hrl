@@ -4,7 +4,8 @@
 -record(neuron_state,
 {
     atom,    % neuron atom
-    weights, % weights with bias
+    weights, % weights
+    bias,    % bias
     ipids,   % input pids
     opids,   % output pids
     isignals % input signals

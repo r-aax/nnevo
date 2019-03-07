@@ -6,7 +6,7 @@
 
 -include("nnet.hrl").
 
--export([create/1, loop/1,
+-export([create/1, create/5, loop/1,
          sense/2]).
 
 %---------------------------------------------------------------------------------------------------
@@ -27,10 +27,10 @@ create(NNN) ->
     %   \       /   \      /
     %    --->N01---->N11---
     %
-    N00 = neuron:create(NNN, 0, [0.5], 0.4),
-    N01 = neuron:create(NNN, 1, [0.8], -1.2),
-    N10 = neuron:create(NNN, 2, [1.2, 0.3], -0.1),
-    N11 = neuron:create(NNN, 3, [0.9, 1.7], 0.7),
+    N00 = neuron:create(NNN, 0, [1], 2),
+    N01 = neuron:create(NNN, 1, [1], 2),
+    N10 = neuron:create(NNN, 2, [1, 1], 2),
+    N11 = neuron:create(NNN, 3, [1, 1], 2),
 
     LLayer = [N10, N11],
     State = #nnet_state
@@ -50,6 +50,71 @@ create(NNN) ->
     N10 ! {set_pids, [N00, N01], [Pid]},
     N11 ! {set_pids, [N00, N01], [Pid]},
 
+    Pid.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Create neuronet from skeleton.
+%%   NNN - neuronet number,
+%%   Biases - biases list,
+%%   FLayerSize - first layer size,
+%%   LLayerSize - last layer size,
+%%   Edges - edges list.
+create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
+    Atom = utils:nnet_atom(NNN),
+
+    % Create neurons.
+    NeuronsCount = length(Biases),
+    NeuronsNumbers = lists:seq(0, NeuronsCount - 1),
+    Neurons =
+        lists:map
+        (
+            fun({NN, B}) ->
+                % Just create neurons without links.
+                neuron:create(NNN, NN, [], B)
+            end,
+            lists:zip(NeuronsNumbers, Biases)
+        ),
+
+    % Create first and last layers.
+    {FLayer, _} = lists:split(FLayerSize, Neurons),
+    LLayer = lists:nthtail(NeuronsCount - LLayerSize, Neurons),
+
+    % Set weights to first layer.
+    lists:foreach
+    (
+        fun(FLE) ->
+            FLE ! {add_weight, 1.0}
+        end,
+        FLayer
+    ),
+
+    % Set edges.
+    lists:foreach
+    (
+        fun({Src, Dst, W}) ->
+            SrcPid = lists:nth(Src + 1, Neurons),
+            DstPid = lists:nth(Dst + 1, Neurons),
+            SrcPid ! {add_dst, DstPid},
+            DstPid ! {add_src, SrcPid, W}
+        end,
+        Edges
+    ),
+
+    % Spawn process.
+    State = #nnet_state
+    {
+        atom = Atom,
+        flayer = FLayer,
+        llayer = LLayer,
+        source = none,
+        osignals = utils:nones(LLayer)
+    },
+    Pid = spawn(?MODULE, loop, [State]),
+    register(Atom, Pid),
+
+    % Return pid.
     Pid.
 
 %---------------------------------------------------------------------------------------------------
