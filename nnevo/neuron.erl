@@ -4,7 +4,9 @@
 % Module name.
 -module(neuron).
 
--export([create/4, loop/5]).
+-include("neuron.hrl").
+
+-export([create/4, loop/1]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -17,34 +19,45 @@
 %%   W - weights array,
 %%   B - bias.
 create(NNN, NN, W, B) ->
-    A = utils:neuron_atom(NNN, NN),
-    Pid = spawn(?MODULE, loop, [A, W ++ [B], none, none, none]),
-    register(A, Pid),
+    Atom = utils:neuron_atom(NNN, NN),
+    State = #neuron_state
+    {
+        atom = Atom,
+        weights = W ++ [B],
+        ipids = [],
+        opids = [],
+        isignals = []
+    },
+    Pid = spawn(?MODULE, loop, [State]),
+    register(Atom, Pid),
     Pid.
 
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
 %% Neuron infinite loop.
-%%   A - atom,
-%%   W - weights array (including bias),
-%%   IPids - input pids,
-%%   ISignals - input signals,
-%%   OPids - output pids.
-loop(A, W, IPids, ISignals, OPids) ->
+%%   State - neuron state.
+loop(#neuron_state{atom = Atom,
+                   weights = Weights,
+                   ipids = IPids,
+                   opids = OPids,
+                   isignals = ISignals} = State) ->
+
+    % Listen.
     receive
 
         % Sense.
         {sense, From, Signal} ->
-            %io:format("~w: before insert ~w ~w ~w ~w~n", [A, ISignals, Signal, IPids, From]),
-            NewISignals = utils:insert_signal(ISignals, Signal, IPids, From),
 
+            %io:format("~w: before insert ~w ~w ~w ~w~n",
+            %          [Atom, ISignals, Signal, IPids, From]),
+
+            NewISignals = utils:insert_signal(ISignals, Signal, IPids, From),
             IsSignalsReady = utils:is_signals_ready(NewISignals),
 
             if
                 IsSignalsReady ->
-                    %io:format("~w: before dot ~w ~w~n", [A, NewISignals, W]),
-                    Dot = utils:dot(NewISignals, W),
+                    Dot = utils:dot(NewISignals, Weights),
                     Out = math:tanh(Dot),
                     utils:send_one_to_array(Out, OPids);
 
@@ -52,23 +65,28 @@ loop(A, W, IPids, ISignals, OPids) ->
                     ok
             end,
 
-            loop(A, W, IPids, NewISignals, OPids);
+            loop(State#neuron_state{isignals = NewISignals});
 
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
+
             NewISignals = lists:duplicate(length(NewIPids), none),
-            io:format("~w: IPids (~w), ISignals (~w), OPids (~w) are set~n",
-                      [A, NewIPids, NewISignals, NewOPids]),
-            loop(A, W, NewIPids, NewISignals, NewOPids);
+
+            %io:format("~w: IPids (~w), ISignals (~w), OPids (~w) are set~n",
+            %          [Atom, NewIPids, NewISignals, NewOPids]),
+
+            loop(State#neuron_state{ipids = NewIPids,
+                                    opids = NewOPids,
+                                    isignals = NewISignals});
 
         % Stop.
         stop ->
-            io:format("~w: stopped~n", [A]);
+            io:format("~w: stopped~n", [Atom]);
 
         % Unknown command.
         % Neuron dies.
         Any ->
-            io:format("~w: unknown command ~w~n", [A, Any])
+            io:format("~w: unknown command ~w~n", [Atom, Any])
     end.
 
 %---------------------------------------------------------------------------------------------------

@@ -55,8 +55,8 @@ dot(I, W) ->
 %%   Acc - accumulator.
 dot([], [B], Acc)->
     Acc + B;
-dot([HI | TI], [HW | TW], Acc) ->
-    dot(TI, TW, Acc + HI * HW).
+dot([IH | IT], [WH | WT], Acc) ->
+    dot(IT, WT, Acc + IH * WH).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -86,34 +86,31 @@ send_array_to_array([SH | ST], [PH | PT]) ->
 
 %% @doc
 %% Insert signal to signals array to correct position (from right pid).
-%%   Signasls - signals array,
-%%   Signal - income signal,
-%%   Pids - pids array,
-%%   Pid - pid to check.
-insert_signal(Signals, Signal, Pids, Pid) ->
-    insert_signal(Signals, Signal, Pids, Pid, []).
+%%   Ss - signals array,
+%%   S - income signal,
+%%   Ps - pids array,
+%%   P - pid to check.
+insert_signal(Ss, S, Ps, P) ->
+    insert_signal(Ss, S, Ps, P, []).
 
 %% @doc
 %% Insert signal to signals array to correct position (from right pid).
-%%   Signasls - signals array,
-%%   Signal - income signal,
-%%   Pids - pids array,
-%%   Pid - pid to check,
-%%   NewSignals - new signals array.
-insert_signal([_ | ST], Signal, [Pid | _], Pid, NewSignals) ->
-    lists:reverse(NewSignals) ++ [Signal | ST];
-insert_signal([SH | ST], Signal, [_ | PT], Pid, NewSignals) ->
-    insert_signal(ST, Signal, PT, Pid, [SH | NewSignals]).
+%%   Ss - signals array,
+%%   S - income signal,
+%%   Ps - pids array,
+%%   P - pid to check,
+%%   R - result.
+insert_signal([_ | SsT], S, [P | _], P, R) ->
+    lists:reverse(R) ++ [S | SsT];
+insert_signal([SsH | SsT], S, [_ | PsT], P, R) ->
+    insert_signal(SsT, S, PsT, P, [SsH | R]).
 
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
 %% Check if signals array is ready.
-is_signals_ready([]) ->
-    true;
-is_signals_ready([none | _]) ->
-    false;
-is_signals_ready([_ | T]) ->
-    is_signals_ready(T).
+%%   Ss - list of signals.
+is_signals_ready(Ss) ->
+    lists:all(fun(S) -> S /= none end, Ss).
 
 %---------------------------------------------------------------------------------------------------
