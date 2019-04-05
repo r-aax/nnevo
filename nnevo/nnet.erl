@@ -129,7 +129,7 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-%% Neuronert infinite loop.
+%% Neuronet infinite loop.
 %%   State - state.
 loop(#nnet_state{atom = Atom,
                  flayer = FLayer,

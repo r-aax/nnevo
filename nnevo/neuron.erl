@@ -56,8 +56,7 @@ loop(#neuron_state{atom = Atom,
 
             if
                 IsSignalsReady ->
-                    Dot = utils:dot(NewISignals, Weights ++ [Bias]),
-                    Out = math:tanh(Dot),
+                    Out = utils:sigmoid(NewISignals, Weights, Bias),
                     utils:send_one_to_array(Out, OPids);
 
                 true ->

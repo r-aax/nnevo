@@ -5,7 +5,7 @@
 -module(utils).
 
 -export([neuron_atom/2, nnet_atom/1, nones/1,
-         dot/2,
+         dot_b/3, sigmoid/3,
          send_one_to_array/2, send_array_to_array/2,
          insert_signal/4, is_signals_ready/1]).
 
@@ -49,22 +49,25 @@ nones(Arr) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-%% Dot product (including bias).
-%%   I - inputs vector,
-%%   W - weights vector and bias.
-dot(I, W) ->
-    dot(I, W, 0.0).
-
-%% @private
-%% @doc
-%% Dot product (including bias).
+%% Dot product including bias.
 %%   I - inputs vector,
 %%   W - weights vector,
-%%   Acc - accumulator.
-dot([], [B], Acc)->
-    Acc + B;
-dot([IH | IT], [WH | WT], Acc) ->
-    dot(IT, WT, Acc + IH * WH).
+%%   B - bias.
+dot_b([], [], B) ->
+    B;
+dot_b([IH | IT], [WH | WT], B) ->
+    dot_b(IT, WT, B + IH * WH).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Sigmoid function.
+%%   I - inputs vector,
+%%   W - weights vector,
+%%   B - bias.
+sigmoid(I, W, B) ->
+    D = dot_b(I, W, B),
+    1.0 / (1.0 + math:exp(-D)).
 
 %---------------------------------------------------------------------------------------------------
 
