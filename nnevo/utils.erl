@@ -72,24 +72,18 @@ sigmoid(I, W, B) ->
 %% @doc
 %% Send one signal to array of pids.
 %%   S - signal,
-%%   P - pids.
-send_one_to_array(_, []) ->
-    ok;
-send_one_to_array(S, [PH | PT]) ->
-    PH ! {sense, self(), S},
-    send_one_to_array(S, PT).
+%%   Ps - pids.
+send_one_to_array(S, Ps) ->
+    lists:foreach(fun(P) -> P ! {sense, self(), S} end, Ps).
 
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
 %% Send array of signals to array of pids.
-%%   S - signals,
-%%   P - pids.
-send_array_to_array([], []) ->
-    ok;
-send_array_to_array([SH | ST], [PH | PT]) ->
-    PH ! {sense, self(), SH},
-    send_array_to_array(ST, PT).
+%%   Ss - signals,
+%%   Ps - pids.
+send_array_to_array(Ss, Ps) ->
+    lists:foreach(fun({S, P}) -> P ! {sense, self(), S} end, lists:zip(Ss, Ps)).
 
 %---------------------------------------------------------------------------------------------------
 
