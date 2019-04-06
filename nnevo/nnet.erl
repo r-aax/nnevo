@@ -6,52 +6,12 @@
 
 -include("nnet.hrl").
 
--export([create/1, create/5, loop/1,
+-export([create/5, create_multilayer/2,
+         loop/1,
          sense/2]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
-%---------------------------------------------------------------------------------------------------
-
-%% @doc
-%% Create neuronnet.
-%%   NNN - neuronert number.
-create(NNN) ->
-    Atom = utils:nnet_atom(NNN),
-
-    % Test neurons.
-    %
-    %    --->N00---->N10---
-    %   /       \   /      \
-    %  S          X         A
-    %   \       /   \      /
-    %    --->N01---->N11---
-    %
-    N00 = neuron:create(NNN, 0, [1], 2),
-    N01 = neuron:create(NNN, 1, [1], 2),
-    N10 = neuron:create(NNN, 2, [1, 1], 2),
-    N11 = neuron:create(NNN, 3, [1, 1], 2),
-
-    LLayer = [N10, N11],
-    State = #nnet_state
-    {
-        atom = Atom,
-        flayer = [N00, N01],
-        llayer = LLayer,
-        source = none,
-        osignals = utils:nones(LLayer)
-    },
-    Pid = spawn(?MODULE, loop, [State]),
-    register(Atom, Pid),
-
-    % Set pids.
-    N00 ! {set_pids, [Pid], [N10, N11]},
-    N01 ! {set_pids, [Pid], [N10, N11]},
-    N10 ! {set_pids, [N00, N01], [Pid]},
-    N11 ! {set_pids, [N00, N01], [Pid]},
-
-    Pid.
-
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
@@ -66,7 +26,7 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
 
     % Create neurons.
     NeuronsCount = length(Biases),
-    NeuronsNumbers = lists:seq(0, NeuronsCount - 1),
+    NeuronsNumbers = lists:seq(1, NeuronsCount),
     Neurons =
         lists:map
         (
@@ -106,8 +66,8 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
     lists:foreach
     (
         fun({Src, Dst, W}) ->
-            SrcPid = lists:nth(Src + 1, Neurons),
-            DstPid = lists:nth(Dst + 1, Neurons),
+            SrcPid = lists:nth(Src, Neurons),
+            DstPid = lists:nth(Dst, Neurons),
             SrcPid ! {add_dst, DstPid},
             DstPid ! {add_src, SrcPid, W}
         end,
@@ -125,6 +85,27 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
 
     % Return pid.
     Pid.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Create multilayer net.
+%%   NNN - neuronet number,
+%%   Layers - list of layers sizes.
+create_multilayer(NNN, Layers) ->
+
+    % Neurons count is sum of neurons in all layers.
+    NeuronsCount = lists:sum(Layers),
+
+    % The first layer size and the last layers size are
+    % the first and the last elements of the Layers list.
+
+    % Main constructor.
+    create(NNN,
+           lists:duplicate(NeuronsCount, 1.0),
+           lists:nth(1, Layers),
+           lists:last(Layers),
+           utils:multilayer_nnet_edges(Layers)).
 
 %---------------------------------------------------------------------------------------------------
 

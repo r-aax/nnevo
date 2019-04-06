@@ -7,7 +7,8 @@
 -export([neuron_atom/2, nnet_atom/1, nones/1,
          dot_b/3, sigmoid/3,
          send_one_to_array/2, send_array_to_array/2,
-         insert_signal/4, is_signals_ready/1]).
+         insert_signal/4, is_signals_ready/1,
+         multilayer_nnet_edges/1]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -123,5 +124,29 @@ insert_signal([SsH | SsT], S, [_ | PsT], P, R) ->
 %%   Ss - list of signals.
 is_signals_ready(Ss) ->
     lists:all(fun(S) -> S /= none end, Ss).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Multilayer neuronet edges.
+%%   Layer - layers.
+multilayer_nnet_edges(Layers) ->
+    multilayer_nnet_edges(Layers, 1, []).
+
+%% @doc
+%% Multilayer neuronet edges.
+%%   Layer - layers,
+%%   N - neuron current number,
+%%   Res - result.
+multilayer_nnet_edges([_], _, R) ->
+    R;
+multilayer_nnet_edges([F, S | T], N, R) ->
+
+    % Edges set from layer F to layer S.
+    Fs = lists:seq(N, N + F - 1),
+    Ss = lists:seq(N + F, N + F + S - 1),
+    E = [{X, Y, 1.0} || X <- Fs, Y <- Ss],
+
+    multilayer_nnet_edges([S | T], N + F, R ++ E).
 
 %---------------------------------------------------------------------------------------------------

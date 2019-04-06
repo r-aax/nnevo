@@ -13,24 +13,13 @@
 %% @doc
 %% Start function.
 start() ->
-    N0 =
-        nnet:create
-        (
-            0,
-            lists:duplicate(4, 2.0),
-            2,
-            2,
-            [
-                {0, 2, 1.0},
-                {0, 3, 1.0},
-                {1, 2, 1.0},
-                {1, 3, 1.0}
-            ]
-        ),
-    N1 = nnet:create(1),
-    X0 = nnet:sense(N0, [1, 1]),
-    X1 = nnet:sense(N1, [1, 1]),
-    io:format("check ~w == ~w~n", [X0, X1]),
+    N1 = nnet:create_multilayer(1, [2, 2]),
+    N2 = nnet:create_multilayer(2, [2, 3, 2]),
+    N3 = nnet:create_multilayer(3, [2, 3, 4, 3, 2]),
+    X1 = nnet:sense(N1, [1.0, 1.0]),
+    X2 = nnet:sense(N2, [1.0, 1.0]),
+    X3 = nnet:sense(N3, [1.0, 1.0]),
+    io:format("senses : ~w, ~w, ~w~n", [X1, X2, X3]),
     halt().
 
 %---------------------------------------------------------------------------------------------------
