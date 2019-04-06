@@ -54,10 +54,8 @@ nones(Arr) ->
 %%   I - inputs vector,
 %%   W - weights vector,
 %%   B - bias.
-dot_b([], [], B) ->
-    B;
-dot_b([IH | IT], [WH | WT], B) ->
-    dot_b(IT, WT, B + IH * WH).
+dot_b(I, W, B) ->
+    lists:sum(lists:zipwith(fun(X, Y) -> X * Y end, I, W)) + B.
 
 %---------------------------------------------------------------------------------------------------
 
@@ -67,8 +65,7 @@ dot_b([IH | IT], [WH | WT], B) ->
 %%   W - weights vector,
 %%   B - bias.
 sigmoid(I, W, B) ->
-    D = dot_b(I, W, B),
-    1.0 / (1.0 + math:exp(-D)).
+    1.0 / (1.0 + math:exp(-dot_b(I, W, B))).
 
 %---------------------------------------------------------------------------------------------------
 
