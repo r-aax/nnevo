@@ -1,6 +1,8 @@
 %% @doc
 %% Neuronet declaration.
 
+%% @doc
+%% Neuronet state.
 -record(nnet_state,
 {
     atom,    % atom

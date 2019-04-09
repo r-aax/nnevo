@@ -1,6 +1,8 @@
 %% @doc
 %% Neuron declaration.
 
+%% @doc
+%% Neuron state.
 -record(neuron_state,
 {
     atom,    % neuron atom
