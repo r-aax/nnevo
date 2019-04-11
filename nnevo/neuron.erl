@@ -57,13 +57,12 @@ loop(#neuron_state{atom = Atom,
             if
                 IsSignalsReady ->
                     Out = utils:sigmoid(NewISignals, Weights, Bias),
-                    utils:send_one_to_array(Out, OPids);
+                    utils:send_one_to_array(Out, OPids),
+                    loop(State#neuron_state{isignals = utils:nones(IPids)});
 
                 true ->
-                    ok
-            end,
-
-            loop(State#neuron_state{isignals = NewISignals});
+                    loop(State#neuron_state{isignals = NewISignals})
+            end;
 
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
