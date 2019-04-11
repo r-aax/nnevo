@@ -128,7 +128,7 @@ loop(#nnet_state{atom = Atom,
         % Sense from last layer.
         {sense, From, Signal} ->
 
-            NewPS = utils:insert_signal_2(PS, From, Signal),
+            NewPS = utils:insert_signal(PS, From, Signal),
             IsSignalsReady = utils:is_signals_ready_2(NewPS),
 
             if

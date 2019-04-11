@@ -9,7 +9,7 @@
          dot_b/3,
          sigmoid_2/3,
          send_one_to_array/2, send_array_to_array/2,
-         insert_signal_2/3,
+         insert_signal/3,
          is_signals_ready_2/1,
          multilayer_nnet_edges/1]).
 
@@ -102,23 +102,13 @@ send_array_to_array(Ss, Ps) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-%% Insert signal to signals array to correct position (from right pid).
-%%   In - in array,
+%% Insert signal to Pid-Signal tuples array into correct position (from right pid).
+%%   PS - array of Pid-Signal tuples,
 %%   P - pid to check.
 %%   S - income signal,
-insert_signal_2(In, P, S) ->
-    insert_signal_2(In, P, S, []).
-
-%% @doc
-%% Insert signal to signals array to correct position (from right pid).
-%%   In - signals array,
-%%   P - pid to check,
-%%   S - income signal,
-%%   R - result.
-insert_signal_2([{P, _} | InT], P, S, R) ->
-    lists:reverse(R) ++ [{P, S} | InT];
-insert_signal_2([InH | InT], P, S, R) ->
-    insert_signal_2(InT, P, S, [InH | R]).
+insert_signal(PS, P, S) ->
+    {F, [_ | T]} = lists:splitwith(fun({X, _}) -> X /= P end, PS),
+    lists:concat([F, [{P, S} | T]]).
 
 %---------------------------------------------------------------------------------------------------
 
