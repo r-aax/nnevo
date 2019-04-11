@@ -25,7 +25,7 @@ create(NNN, NN, Weights, Bias) ->
         atom = Atom,
         weights = Weights,
         bias = Bias,
-        in = [],
+        ps = [],
         opids = []
     },
     Pid = spawn(?MODULE, loop, [State]),
@@ -40,7 +40,7 @@ create(NNN, NN, Weights, Bias) ->
 loop(#neuron_state{atom = Atom,
                    weights = Weights,
                    bias = Bias,
-                   in = In,
+                   ps = PS,
                    opids = OPids} = State) ->
 
     % Listen.
@@ -49,23 +49,23 @@ loop(#neuron_state{atom = Atom,
         % Sense.
         {sense, From, Signal} ->
 
-            NewIn = utils:insert_signal_2(In, From, Signal),
-            IsSignalsReady = utils:is_signals_ready_2(NewIn),
+            NewPS = utils:insert_signal_2(PS, From, Signal),
+            IsSignalsReady = utils:is_signals_ready_2(NewPS),
 
             if
                 IsSignalsReady ->
-                    Out = utils:sigmoid_2(NewIn, Weights, Bias),
+                    Out = utils:sigmoid_2(NewPS, Weights, Bias),
                     utils:send_one_to_array(Out, OPids),
-                    loop(State#neuron_state{in = utils:nones_2(In)});
+                    loop(State#neuron_state{ps = utils:nones_2(PS)});
 
                 true ->
-                    loop(State#neuron_state{in = NewIn})
+                    loop(State#neuron_state{ps = NewPS})
             end;
 
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
 
-            loop(State#neuron_state{in = lists:zip(NewIPids, utils:nones(NewIPids)),
+            loop(State#neuron_state{ps = lists:zip(NewIPids, utils:nones(NewIPids)),
                                     opids = NewOPids});
 
         % Add destination.
@@ -74,9 +74,9 @@ loop(#neuron_state{atom = Atom,
 
         % Add source.
         {add_src, Src, W} ->
-            NewIn = In ++ [{Src, none}],
+            NewPS = PS ++ [{Src, none}],
             loop(State#neuron_state{weights = Weights ++ [W],
-                                    in = NewIn});
+                                    ps = NewPS});
 
         % Stop.
         stop ->

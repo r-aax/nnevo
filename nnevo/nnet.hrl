@@ -9,6 +9,6 @@
     neurons, % all neurons
     flayer,  % first layer
     llayer,  % last layer
-    source,   % signal source
+    source,  % signal source
     osignals % output signals
 }).
