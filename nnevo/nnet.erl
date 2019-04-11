@@ -45,6 +45,7 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
     State = #nnet_state
     {
         atom = Atom,
+        neurons = Neurons,
         flayer = FLayer,
         llayer = LLayer,
         source = none,
@@ -143,8 +144,7 @@ loop(#nnet_state{atom = Atom,
 
         % Stop command.
         stop ->
-            %% @todo
-            %% We must stop all neurons.
+            lists:foreach(fun(Neuron) -> Neuron ! stop end, State#nnet_state.neurons),
             ok;
 
         % Unknown command.

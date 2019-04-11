@@ -6,6 +6,7 @@
 -record(nnet_state,
 {
     atom,    % atom
+    neurons, % all neurons
     flayer,  % first layer
     llayer,  % last layer
     source,   % signal source
