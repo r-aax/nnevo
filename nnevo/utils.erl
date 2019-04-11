@@ -6,11 +6,9 @@
 
 -export([neuron_atom/2, nnet_atom/1,
          nones/1, nones_2/1,
-         dot_b/3,
-         sigmoid_2/3,
+         sigmoid/3,
          send_one_to_array/2, send_array_to_array/2,
-         insert_signal/3,
-         is_signals_ready_2/1,
+         insert_signal/3, is_signals_ready/1,
          multilayer_nnet_edges/1]).
 
 %---------------------------------------------------------------------------------------------------
@@ -63,23 +61,19 @@ nones_2(Arr) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-%% Dot product including bias.
-%%   I - inputs vector,
-%%   W - weights vector,
-%%   B - bias.
-dot_b(I, W, B) ->
-    lists:sum(lists:zipwith(fun(X, Y) -> X * Y end, I, W)) + B.
-
-%---------------------------------------------------------------------------------------------------
-
-%% @doc
 %% Sigmoid function.
-%%   I - inputs vector,
+%%   PS - inputs vector of Pid-Signal tuples,
 %%   W - weights vector,
 %%   B - bias.
-sigmoid_2(I, W, B) ->
-    {_, II} = lists:unzip(I),
-    1.0 / (1.0 + math:exp(-dot_b(II, W, B))).
+sigmoid(PS, W, B) ->
+    Dot =
+        fun
+            F([], []) ->
+                0.0;
+            F([{_, SH} | PST], [WH | WT]) ->
+                SH * WH + F(PST, WT)
+        end,
+    1.0 / (1.0 + math:exp(-Dot(PS, W) + B)).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -115,7 +109,7 @@ insert_signal(PS, P, S) ->
 %% @doc
 %% Check if signals array is ready.
 %%   Ss - list of signals.
-is_signals_ready_2(Ss) ->
+is_signals_ready(Ss) ->
     lists:all(fun({_, S}) -> S /= none end, Ss).
 
 %---------------------------------------------------------------------------------------------------

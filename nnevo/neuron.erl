@@ -50,11 +50,11 @@ loop(#neuron_state{atom = Atom,
         {sense, From, Signal} ->
 
             NewPS = utils:insert_signal(PS, From, Signal),
-            IsSignalsReady = utils:is_signals_ready_2(NewPS),
+            IsSignalsReady = utils:is_signals_ready(NewPS),
 
             if
                 IsSignalsReady ->
-                    Out = utils:sigmoid_2(NewPS, Weights, Bias),
+                    Out = utils:sigmoid(NewPS, Weights, Bias),
                     utils:send_one_to_array(Out, OPids),
                     loop(State#neuron_state{ps = utils:nones_2(PS)});
 
