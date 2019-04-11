@@ -18,17 +18,17 @@
 %% Unsigned integer of 8 bits (big endian).
 -define(BYTE, 8/unsigned-big-integer).
 
--export([mnist_open_files/2, mnist_get_next/1]).
+-export([mnist_get_binaries/2, mnist_get_next/1]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-%% Open MNIST files.
+%% Open MNIST files and extract binaries.
 %%   ImagesFile - images file,
 %%   LabelsFile - labels file.
-mnist_open_files(ImagesFile, LabelsFile) ->
+mnist_get_binaries(ImagesFile, LabelsFile) ->
 
     % Open files.
     ?OK(ImagesBin) = file:read_file(ImagesFile),

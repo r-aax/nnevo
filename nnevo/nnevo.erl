@@ -4,22 +4,37 @@
 % Module name.
 -module(nnevo).
 
--export([start/0]).
+-export([start/0, mnist_run/3]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
+%% Run MNIST tests.
+%%   Net - neuronet,
+%%   B - binary data,
+%%   C - current number.
+mnist_run(Net, B, C) ->
+
+    % Get next data.
+    case parser:mnist_get_next(B) of
+        {{_I, L}, Rest} ->
+            io:format("case ~w : label = ~w~n", [C, L]),
+            mnist_run(Net, Rest, C + 1);
+        _ ->
+            ok
+    end.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
 %% Start function.
 start() ->
-    N1 = nnet:create_multilayer(1, [2, 2]),
-    N2 = nnet:create_multilayer(2, [2, 3, 2]),
-    N3 = nnet:create_multilayer(3, [2, 3, 4, 3, 2]),
-    X1 = nnet:sense(N1, [1.0, 1.0]),
-    X2 = nnet:sense(N2, [1.0, 1.0]),
-    X3 = nnet:sense(N3, [1.0, 1.0]),
-    io:format("senses : ~w, ~w, ~w~n", [X1, X2, X3]),
+    Net = nnet:create_multilayer(1, [2, 2]),
+    B = parser:mnist_get_binaries("../data/mnist/t10k-images.idx3-ubyte",
+                                  "../data/mnist/t10k-labels.idx1-ubyte"),
+    mnist_run(Net, B, 1),
     halt().
 
 %---------------------------------------------------------------------------------------------------
