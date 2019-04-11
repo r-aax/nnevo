@@ -4,10 +4,13 @@
 % Module name.
 -module(utils).
 
--export([neuron_atom/2, nnet_atom/1, nones/1,
-         dot_b/3, sigmoid/3,
+-export([neuron_atom/2, nnet_atom/1,
+         nones/1, nones_2/1,
+         dot_b/3,
+         sigmoid/3, sigmoid_2/3,
          send_one_to_array/2, send_array_to_array/2,
-         insert_signal/4, is_signals_ready/1,
+         insert_signal/4, insert_signal_2/3,
+         is_signals_ready/1, is_signals_ready_2/1,
          multilayer_nnet_edges/1]).
 
 %---------------------------------------------------------------------------------------------------
@@ -50,6 +53,16 @@ nones(Arr) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
+%% Arrays of nones.
+%%   Arr - array.
+nones_2(Arr) ->
+    {A, _} = lists:unzip(Arr),
+    N = lists:duplicate(length(Arr), none),
+    lists:zip(A, N).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
 %% Dot product including bias.
 %%   I - inputs vector,
 %%   W - weights vector,
@@ -66,6 +79,17 @@ dot_b(I, W, B) ->
 %%   B - bias.
 sigmoid(I, W, B) ->
     1.0 / (1.0 + math:exp(-dot_b(I, W, B))).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Sigmoid function.
+%%   I - inputs vector,
+%%   W - weights vector,
+%%   B - bias.
+sigmoid_2(I, W, B) ->
+    {_, II} = lists:unzip(I),
+    1.0 / (1.0 + math:exp(-dot_b(II, W, B))).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -111,10 +135,39 @@ insert_signal([SsH | SsT], S, [_ | PsT], P, R) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
+%% Insert signal to signals array to correct position (from right pid).
+%%   In - in array,
+%%   P - pid to check.
+%%   S - income signal,
+insert_signal_2(In, P, S) ->
+    insert_signal_2(In, P, S, []).
+
+%% @doc
+%% Insert signal to signals array to correct position (from right pid).
+%%   In - signals array,
+%%   P - pid to check,
+%%   S - income signal,
+%%   R - result.
+insert_signal_2([{P, _} | InT], P, S, R) ->
+    lists:reverse(R) ++ [{P, S} | InT];
+insert_signal_2([InH | InT], P, S, R) ->
+    insert_signal_2(InT, P, S, [InH | R]).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
 %% Check if signals array is ready.
 %%   Ss - list of signals.
 is_signals_ready(Ss) ->
     lists:all(fun(S) -> S /= none end, Ss).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Check if signals array is ready.
+%%   Ss - list of signals.
+is_signals_ready_2(Ss) ->
+    lists:all(fun({_, S}) -> S /= none end, Ss).
 
 %---------------------------------------------------------------------------------------------------
 

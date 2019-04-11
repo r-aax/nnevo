@@ -25,9 +25,8 @@ create(NNN, NN, Weights, Bias) ->
         atom = Atom,
         weights = Weights,
         bias = Bias,
-        ipids = [],
-        opids = [],
-        isignals = []
+        in = [],
+        opids = []
     },
     Pid = spawn(?MODULE, loop, [State]),
     register(Atom, Pid),
@@ -41,9 +40,8 @@ create(NNN, NN, Weights, Bias) ->
 loop(#neuron_state{atom = Atom,
                    weights = Weights,
                    bias = Bias,
-                   ipids = IPids,
-                   opids = OPids,
-                   isignals = ISignals} = State) ->
+                   in = In,
+                   opids = OPids} = State) ->
 
     % Listen.
     receive
@@ -51,27 +49,24 @@ loop(#neuron_state{atom = Atom,
         % Sense.
         {sense, From, Signal} ->
 
-            NewISignals = utils:insert_signal(ISignals, Signal, IPids, From),
-            IsSignalsReady = utils:is_signals_ready(NewISignals),
+            NewIn = utils:insert_signal_2(In, From, Signal),
+            IsSignalsReady = utils:is_signals_ready_2(NewIn),
 
             if
                 IsSignalsReady ->
-                    Out = utils:sigmoid(NewISignals, Weights, Bias),
+                    Out = utils:sigmoid_2(NewIn, Weights, Bias),
                     utils:send_one_to_array(Out, OPids),
-                    loop(State#neuron_state{isignals = utils:nones(IPids)});
+                    loop(State#neuron_state{in = utils:nones_2(In)});
 
                 true ->
-                    loop(State#neuron_state{isignals = NewISignals})
+                    loop(State#neuron_state{in = NewIn})
             end;
 
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
 
-            NewISignals = utils:nones(NewIPids),
-
-            loop(State#neuron_state{ipids = NewIPids,
-                                    opids = NewOPids,
-                                    isignals = NewISignals});
+            loop(State#neuron_state{in = lists:zip(NewIPids, utils:nones(NewIPids)),
+                                    opids = NewOPids});
 
         % Add destination.
         {add_dst, Dst} ->
@@ -79,11 +74,9 @@ loop(#neuron_state{atom = Atom,
 
         % Add source.
         {add_src, Src, W} ->
-            NewIPids = IPids ++ [Src],
-            NewISignals = utils:nones(NewIPids),
+            NewIn = In ++ [{Src, none}],
             loop(State#neuron_state{weights = Weights ++ [W],
-                                    ipids = NewIPids,
-                                    isignals = NewISignals});
+                                    in = NewIn});
 
         % Stop.
         stop ->
