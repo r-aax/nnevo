@@ -19,8 +19,9 @@ mnist_run(Net, B, C) ->
 
     % Get next data.
     case parser:mnist_get_next(B) of
-        {{_I, L}, Rest} ->
-            io:format("case ~w : label = ~w~n", [C, L]),
+        {{I, L}, Rest} ->
+            S = nnet:sense(Net, I),
+            io:format("case ~w : label = ~w (sense = ~w)~n", [C, L, S]),
             mnist_run(Net, Rest, C + 1);
         _ ->
             ok
@@ -31,7 +32,10 @@ mnist_run(Net, B, C) ->
 %% @doc
 %% Start function.
 start() ->
-    Net = nnet:create_multilayer(1, [2, 2]),
+
+    % Simple neuronet for digits recognition.
+    Net = nnet:create_multilayer(1, [784, 15, 10]),
+
     B = parser:mnist_get_binaries("../data/mnist/t10k-images.idx3-ubyte",
                                   "../data/mnist/t10k-labels.idx1-ubyte"),
     mnist_run(Net, B, 1),
