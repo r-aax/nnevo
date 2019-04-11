@@ -62,14 +62,8 @@ nones_signals(P) ->
 %%   W - weights vector,
 %%   B - bias.
 sigmoid(PS, W, B) ->
-    Dot =
-        fun
-            F([], []) ->
-                0.0;
-            F([{_, SH} | PST], [WH | WT]) ->
-                SH * WH + F(PST, WT)
-        end,
-    1.0 / (1.0 + math:exp(-Dot(PS, W) + B)).
+    D = lists:sum(lists:zipwith(fun({_, X}, Y) -> X * Y end, PS, W)),
+    1.0 / (1.0 + math:exp(-(D + B))).
 
 %---------------------------------------------------------------------------------------------------
 
