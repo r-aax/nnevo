@@ -64,8 +64,7 @@ loop(#neuron_state{atom = Atom,
 
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
-
-            loop(State#neuron_state{ps = lists:zip(NewIPids, utils:nones(NewIPids)),
+            loop(State#neuron_state{ps = utils:nones_signals(NewIPids),
                                     opids = NewOPids});
 
         % Add destination.

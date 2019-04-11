@@ -133,7 +133,8 @@ loop(#nnet_state{atom = Atom,
 
             if
                 IsSignalsReady ->
-                    Source ! {response, self(), NewPS},
+                    {_, Res} = lists:unzip(NewPS),
+                    Source ! {response, self(), Res},
                     loop(State#nnet_state{source = none, ps = utils:nones_signals(PS)});
 
                 true ->
