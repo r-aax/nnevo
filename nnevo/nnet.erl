@@ -47,7 +47,7 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
         atom = Atom,
         neurons = Neurons,
         flayer = FLayer,
-        ps = lists:zip(LLayer, utils:nones(LLayer)),
+        ps = utils:nones_signals(LLayer),
         source = none
     },
     Pid = spawn(?MODULE, loop, [State]),
@@ -134,7 +134,7 @@ loop(#nnet_state{atom = Atom,
             if
                 IsSignalsReady ->
                     Source ! {response, self(), NewPS},
-                    loop(State#nnet_state{source = none, ps = utils:nones_2(PS)});
+                    loop(State#nnet_state{source = none, ps = utils:nones_signals(PS)});
 
                 true ->
                     loop(State#nnet_state{ps = NewPS})

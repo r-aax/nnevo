@@ -5,8 +5,7 @@
 -module(utils).
 
 -export([neuron_atom/2, nnet_atom/1,
-         nones/1, nones_2/1,
-         sigmoid/3,
+         nones_signals/1, sigmoid/3,
          send_one_to_array/2, send_array_to_array/2,
          insert_signal/3, is_signals_ready/1,
          multilayer_nnet_edges/1]).
@@ -43,20 +42,12 @@ nnet_atom(NNN) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-%% Arrays of nones.
+%% Set signals to nones.
 %%   Arr - array.
-nones(Arr) ->
-    lists:duplicate(length(Arr), none).
-
-%---------------------------------------------------------------------------------------------------
-
-%% @doc
-%% Arrays of nones.
-%%   Arr - array.
-nones_2(Arr) ->
-    {A, _} = lists:unzip(Arr),
-    N = lists:duplicate(length(Arr), none),
-    lists:zip(A, N).
+nones_signals([{_, _} | _] = PS) ->
+    lists:map(fun({X, _}) -> {X, none} end, PS);
+nones_signals(P) ->
+    lists:map(fun(X) -> {X, none} end, P).
 
 %---------------------------------------------------------------------------------------------------
 

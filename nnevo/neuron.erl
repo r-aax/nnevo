@@ -56,7 +56,7 @@ loop(#neuron_state{atom = Atom,
                 IsSignalsReady ->
                     Out = utils:sigmoid(NewPS, Weights, Bias),
                     utils:send_one_to_array(Out, OPids),
-                    loop(State#neuron_state{ps = utils:nones_2(PS)});
+                    loop(State#neuron_state{ps = utils:nones_signals(PS)});
 
                 true ->
                     loop(State#neuron_state{ps = NewPS})
