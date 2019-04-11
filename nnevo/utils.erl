@@ -8,7 +8,12 @@
          nones_signals/1, sigmoid/3,
          send_one_to_array/2, send_array_to_array/2,
          insert_signal/3, is_signals_ready/1,
-         multilayer_nnet_edges/1]).
+         multilayer_nnet_edges/1,
+         ms/0]).
+
+%% @doc
+%% Megaseconds.
+-define(MEGA, 1000000).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -89,11 +94,10 @@ send_array_to_array(Ss, Ps) ->
 %% @doc
 %% Insert signal to Pid-Signal tuples array into correct position (from right pid).
 %%   PS - array of Pid-Signal tuples,
-%%   P - pid to check.
-%%   S - income signal,
+%%   P - pid to check,
+%%   S - income signal.
 insert_signal(PS, P, S) ->
-    {F, [_ | T]} = lists:splitwith(fun({X, _}) -> X /= P end, PS),
-    lists:concat([F, [{P, S} | T]]).
+    lists:keyreplace(P, 1, PS, {P, S}).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -126,5 +130,13 @@ multilayer_nnet_edges([F, S | T], N, R) ->
     E = [{X, Y, 1.0} || X <- Fs, Y <- Ss],
 
     multilayer_nnet_edges([S | T], N + F, R ++ E).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Microseconds.
+ms() ->
+    {Mg, Sc, Mc} = erlang:timestamp(),
+    (Mg * ?MEGA + Sc) * ?MEGA + Mc.
 
 %---------------------------------------------------------------------------------------------------
