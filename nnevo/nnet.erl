@@ -47,9 +47,8 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
         atom = Atom,
         neurons = Neurons,
         flayer = FLayer,
-        llayer = LLayer,
-        source = none,
-        osignals = utils:nones(LLayer)
+        ps = lists:zip(LLayer, utils:nones(LLayer)),
+        source = none
     },
     Pid = spawn(?MODULE, loop, [State]),
     register(Atom, Pid),
@@ -115,9 +114,8 @@ create_multilayer(NNN, Layers) ->
 %%   State - state.
 loop(#nnet_state{atom = Atom,
                  flayer = FLayer,
-                 llayer = LLayer,
-                 source = Source,
-                 osignals = OSignals} = State) ->
+                 ps = PS,
+                 source = Source} = State) ->
 
     % Listen.
     receive
@@ -130,16 +128,16 @@ loop(#nnet_state{atom = Atom,
         % Sense from last layer.
         {sense, From, Signal} ->
 
-            NewOSignals = utils:insert_signal(OSignals, Signal, LLayer, From),
-            IsSignalsReady = utils:is_signals_ready(NewOSignals),
+            NewPS = utils:insert_signal_2(PS, From, Signal),
+            IsSignalsReady = utils:is_signals_ready_2(NewPS),
 
             if
                 IsSignalsReady ->
-                    Source ! {response, self(), NewOSignals},
-                    loop(State#nnet_state{source = none, osignals = utils:nones(LLayer)});
+                    Source ! {response, self(), NewPS},
+                    loop(State#nnet_state{source = none, ps = utils:nones_2(PS)});
 
                 true ->
-                    loop(State#nnet_state{osignals = NewOSignals})
+                    loop(State#nnet_state{ps = NewPS})
             end;
 
         % Stop command.

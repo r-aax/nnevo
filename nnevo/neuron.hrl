@@ -8,6 +8,6 @@
     atom,    % neuron atom
     weights, % weights
     bias,    % bias
-    ps, % lists of tupples {pid, signal}
+    ps,      % lists of tupples {pid, signal} (input signals)
     opids    % output pids
 }).

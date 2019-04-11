@@ -8,7 +8,6 @@
     atom,    % atom
     neurons, % all neurons
     flayer,  % first layer
-    llayer,  % last layer
-    source,  % signal source
-    osignals % output signals
+    ps,      % list of tupples {pid, signal} (output signals)
+    source   % signal source
 }).
