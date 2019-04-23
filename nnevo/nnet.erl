@@ -122,7 +122,7 @@ loop(#nnet_state{atom = Atom,
 
         % Sense from outer world.
         {sense, From, Signal} ->
-            utils:send_array_to_array(forward, Signal, FLayer),
+            utils:send_array_to_array(forward, Signal, utils:nones_signals(FLayer)),
             loop(State#nnet_state{source = From});
 
         % Forward propagation from the last layer.

@@ -71,9 +71,9 @@ sigmoid(PS, W, B) ->
 %% Send one signal to array of pids.
 %%   A - atom,
 %%   S - signal,
-%%   Ps - pids.
+%%   Ps - pids/signal tupples.
 send_one_to_array(A, S, Ps) ->
-    lists:foreach(fun(P) -> P ! {A, self(), S} end, Ps).
+    lists:foreach(fun({P, _}) -> P ! {A, self(), S} end, Ps).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -81,9 +81,9 @@ send_one_to_array(A, S, Ps) ->
 %% Send array of signals to array of pids.
 %%   A - atom,
 %%   Ss - signals,
-%%   Ps - pids.
+%%   Ps - pid/signal tupples.
 send_array_to_array(A, Ss, Ps) ->
-    lists:foreach(fun({S, P}) -> P ! {A, self(), S} end, lists:zip(Ss, Ps)).
+    lists:foreach(fun({S, {P, _}}) -> P ! {A, self(), S} end, lists:zip(Ss, Ps)).
 
 %---------------------------------------------------------------------------------------------------
 

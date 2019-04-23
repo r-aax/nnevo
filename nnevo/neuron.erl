@@ -26,7 +26,7 @@ create(NNN, NN, Weights, Bias) ->
         weights = Weights,
         bias = Bias,
         ips = [],
-        opids = []
+        ops = []
     },
     Pid = spawn(?MODULE, loop, [State]),
     register(Atom, Pid),
@@ -41,7 +41,7 @@ loop(#neuron_state{atom = Atom,
                    weights = Weights,
                    bias = Bias,
                    ips = IPS,
-                   opids = OPids} = State) ->
+                   ops = OPS} = State) ->
 
     % Listen.
     receive
@@ -55,7 +55,7 @@ loop(#neuron_state{atom = Atom,
             if
                 IsSignalsReady ->
                     Out = utils:sigmoid(NewIPS, Weights, Bias),
-                    utils:send_one_to_array(forward, Out, OPids),
+                    utils:send_one_to_array(forward, Out, OPS),
                     loop(State#neuron_state{ips = utils:nones_signals(IPS)});
 
                 true ->
@@ -65,11 +65,12 @@ loop(#neuron_state{atom = Atom,
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
             loop(State#neuron_state{ips = utils:nones_signals(NewIPids),
-                                    opids = NewOPids});
+                                    ops = utils:nones_signals(NewOPids)});
 
         % Add destination.
         {add_dst, Dst} ->
-            loop(State#neuron_state{opids = OPids ++ [Dst]});
+            NewOPS = OPS ++ [{Dst, none}],
+            loop(State#neuron_state{ops = NewOPS});
 
         % Add source.
         {add_src, Src, W} ->
