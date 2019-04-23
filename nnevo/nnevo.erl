@@ -25,8 +25,8 @@ test_run() ->
 test_run(Net) ->
     I = [0.2, 0.3],
     F =
-        fun(#neuron_state{atom = Atom, z = Z, a = A}) ->
-            io:format("~w : z = ~w, a = ~w~n", [Atom, Z, A])
+        fun(#neuron_state{atom = Atom, z = Z, a = A, e = E}) ->
+            io:format("~w : z = ~w, a = ~w, e = ~w~n", [Atom, Z, A, E])
         end,
     S = nnet:sense(Net, I),
     io:format("result : ~p~n", [S]),

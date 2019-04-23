@@ -10,6 +10,7 @@
     bias,    % bias
     z,       % z value
     a,       % a value
+    e,       % error
     ips,     % list of tupples {pid, signal} (IN data)
     ops      % list of tupples {pid, signal} (OUT data)
 }).
