@@ -25,7 +25,7 @@ create(NNN, NN, Weights, Bias) ->
         atom = Atom,
         weights = Weights,
         bias = Bias,
-        ps = [],
+        ips = [],
         opids = []
     },
     Pid = spawn(?MODULE, loop, [State]),
@@ -40,7 +40,7 @@ create(NNN, NN, Weights, Bias) ->
 loop(#neuron_state{atom = Atom,
                    weights = Weights,
                    bias = Bias,
-                   ps = PS,
+                   ips = IPS,
                    opids = OPids} = State) ->
 
     % Listen.
@@ -49,22 +49,22 @@ loop(#neuron_state{atom = Atom,
         % Sense.
         {sense, From, Signal} ->
 
-            NewPS = utils:insert_signal(PS, From, Signal),
-            IsSignalsReady = utils:is_signals_ready(NewPS),
+            NewIPS = utils:insert_signal(IPS, From, Signal),
+            IsSignalsReady = utils:is_signals_ready(NewIPS),
 
             if
                 IsSignalsReady ->
-                    Out = utils:sigmoid(NewPS, Weights, Bias),
+                    Out = utils:sigmoid(NewIPS, Weights, Bias),
                     utils:send_one_to_array(Out, OPids),
-                    loop(State#neuron_state{ps = utils:nones_signals(PS)});
+                    loop(State#neuron_state{ips = utils:nones_signals(IPS)});
 
                 true ->
-                    loop(State#neuron_state{ps = NewPS})
+                    loop(State#neuron_state{ips = NewIPS})
             end;
 
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
-            loop(State#neuron_state{ps = utils:nones_signals(NewIPids),
+            loop(State#neuron_state{ips = utils:nones_signals(NewIPids),
                                     opids = NewOPids});
 
         % Add destination.
@@ -73,9 +73,9 @@ loop(#neuron_state{atom = Atom,
 
         % Add source.
         {add_src, Src, W} ->
-            NewPS = PS ++ [{Src, none}],
+            NewIPS = IPS ++ [{Src, none}],
             loop(State#neuron_state{weights = Weights ++ [W],
-                                    ps = NewPS});
+                                    ips = NewIPS});
 
         % Stop.
         stop ->
