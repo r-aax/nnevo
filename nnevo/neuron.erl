@@ -43,6 +43,7 @@ create(NNN, NN, Weights, Bias) ->
 loop(#neuron_state{atom = Atom,
                    weights = Weights,
                    bias = Bias,
+                   a = A,
                    ips = IPS,
                    ops = OPS} = State) ->
 
@@ -63,6 +64,25 @@ loop(#neuron_state{atom = Atom,
 
                 true ->
                     loop(State#neuron_state{ips = NewIPS})
+            end;
+
+        % Back propagation.
+        {back, From, Signal} ->
+
+            NewOPS = utils:insert_signal(OPS, From, Signal),
+            IsSignalsReady = utils:is_signals_ready(NewOPS),
+
+            if
+                IsSignalsReady ->
+                    {_, S} = lists:unzip(NewOPS),
+                    NewE = lists:sum(S) * A * (1.0 - A),
+                    utils:send_array_to_array(back,
+                                              lists:map(fun(X) -> X * NewE end, Weights),
+                                              IPS),
+                    loop(State#neuron_state{e = NewE, ops = utils:nones_signals(OPS)});
+
+                true ->
+                    loop(State#neuron_state{ops = NewOPS})
             end;
 
         % Act.

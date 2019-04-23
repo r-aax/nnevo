@@ -8,7 +8,7 @@
 
 -export([create/5, create_multilayer/2,
          loop/1,
-         sense/2]).
+         sense_forward/2, sense_back/2]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -120,9 +120,14 @@ loop(#nnet_state{atom = Atom,
     % Listen.
     receive
 
-        % Sense from outer world.
-        {sense, From, Signal} ->
+        % Sense from outer world in the forward direction.
+        {sense_forward, From, Signal} ->
             utils:send_array_to_array(forward, Signal, FPS),
+            loop(State#nnet_state{source = From});
+
+        % Sennse from outer world in the back direction.
+        {sense_back, From, Signal} ->
+            utils:send_array_to_array(back, Signal, LPS),
             loop(State#nnet_state{source = From});
 
         % Forward propagation from the last layer.
@@ -139,6 +144,22 @@ loop(#nnet_state{atom = Atom,
 
                 true ->
                     loop(State#nnet_state{lps = NewLPS})
+            end;
+
+        % Back propagation from the first layer.
+        {back, From, Signal} ->
+
+            NewFPS = utils:insert_signal(FPS, From, Signal),
+            IsSignalsReady = utils:is_signals_ready(NewFPS),
+
+            if
+                IsSignalsReady ->
+                    {_, Res} = lists:unzip(NewFPS),
+                    Source ! {response, self(), Res},
+                    loop(State#nnet_state{source = none, fps = utils:nones_signals(FPS)});
+
+                true ->
+                    loop(State#nnet_state{fps = NewFPS})
             end;
 
         % Act.
@@ -159,13 +180,32 @@ loop(#nnet_state{atom = Atom,
 
 %% @doc
 %% Sense neuronet.
+%%   Atom - atom,
 %%   Pid - process id,
 %%   Signal - signal.
-sense(Pid, Signal) ->
-    Pid ! {sense, self(), Signal},
+sense(Atom, Pid, Signal) ->
+    Pid ! {Atom, self(), Signal},
     receive
         {response, Pid, Out} ->
             Out
     end.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Sense neuronet in forward direction.
+%%   Pid - process id,
+%%   Signal - signal.
+sense_forward(Pid, Signal) ->
+    sense(sense_forward, Pid, Signal).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Sense neuronet in back direction.
+%%   Pid - process id,
+%%   Signal - signal.
+sense_back(Pid, Signal) ->
+    sense(sense_back, Pid, Signal).
 
 %---------------------------------------------------------------------------------------------------

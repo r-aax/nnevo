@@ -28,8 +28,11 @@ test_run(Net) ->
         fun(#neuron_state{atom = Atom, z = Z, a = A, e = E}) ->
             io:format("~w : z = ~w, a = ~w, e = ~w~n", [Atom, Z, A, E])
         end,
-    S = nnet:sense(Net, I),
-    io:format("result : ~p~n", [S]),
+    SF = nnet:sense_forward(Net, I),
+    io:format("result : ~p~n", [SF]),
+    Net ! {act, F},
+    SB = nnet:sense_back(Net, [0.8, 0.7]),
+    io:format("result : ~p~n", [SB]),
     Net ! {act, F}.
 
 %---------------------------------------------------------------------------------------------------
@@ -55,7 +58,7 @@ mnist_run(Net, B, C) ->
     % Get next data.
     case parser:mnist_get_next(B) of
         {{I, L}, Rest} ->
-            S = nnet:sense(Net, I),
+            S = nnet:sense_forward(Net, I),
             io:format("case ~w : label = ~w (sense = ~w)~n", [C, L, S]),
             mnist_run(Net, Rest, C + 1);
         _ ->
