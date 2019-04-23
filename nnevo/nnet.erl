@@ -47,7 +47,7 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
         atom = Atom,
         neurons = Neurons,
         flayer = FLayer,
-        ps = utils:nones_signals(LLayer),
+        lps = utils:nones_signals(LLayer),
         source = none
     },
     Pid = spawn(?MODULE, loop, [State]),
@@ -114,7 +114,7 @@ create_multilayer(NNN, Layers) ->
 %%   State - state.
 loop(#nnet_state{atom = Atom,
                  flayer = FLayer,
-                 ps = PS,
+                 lps = LPS,
                  source = Source} = State) ->
 
     % Listen.
@@ -128,17 +128,17 @@ loop(#nnet_state{atom = Atom,
         % Forward propagation from the last layer.
         {forward, From, Signal} ->
 
-            NewPS = utils:insert_signal(PS, From, Signal),
-            IsSignalsReady = utils:is_signals_ready(NewPS),
+            NewLPS = utils:insert_signal(LPS, From, Signal),
+            IsSignalsReady = utils:is_signals_ready(NewLPS),
 
             if
                 IsSignalsReady ->
-                    {_, Res} = lists:unzip(NewPS),
+                    {_, Res} = lists:unzip(NewLPS),
                     Source ! {response, self(), Res},
-                    loop(State#nnet_state{source = none, ps = utils:nones_signals(PS)});
+                    loop(State#nnet_state{source = none, lps = utils:nones_signals(LPS)});
 
                 true ->
-                    loop(State#nnet_state{ps = NewPS})
+                    loop(State#nnet_state{lps = NewLPS})
             end;
 
         % Stop command.
