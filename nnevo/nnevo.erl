@@ -4,6 +4,8 @@
 % Module name.
 -module(nnevo).
 
+-include("neuron.hrl").
+
 -export([start/0,
          test_run/0, mnist_run/0]).
 
@@ -22,8 +24,13 @@ test_run() ->
 %%   Net - neuronet.
 test_run(Net) ->
     I = [0.2, 0.3],
+    F =
+        fun(#neuron_state{atom = Atom, z = Z, a = A}) ->
+            io:format("~w : z = ~w, a = ~w~n", [Atom, Z, A])
+        end,
     S = nnet:sense(Net, I),
-    io:format("result : ~p~n", [S]).
+    io:format("result : ~p~n", [S]),
+    Net ! {act, F}.
 
 %---------------------------------------------------------------------------------------------------
 
@@ -52,7 +59,7 @@ mnist_run(Net, B, C) ->
             io:format("case ~w : label = ~w (sense = ~w)~n", [C, L, S]),
             mnist_run(Net, Rest, C + 1);
         _ ->
-            ok
+            Net ! stop
     end.
 
 %---------------------------------------------------------------------------------------------------
@@ -60,7 +67,6 @@ mnist_run(Net, B, C) ->
 %% @doc
 %% Start function.
 start() ->
-    test_run(),
-    halt().
+    test_run().
 
 %---------------------------------------------------------------------------------------------------

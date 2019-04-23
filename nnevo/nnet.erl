@@ -141,13 +141,16 @@ loop(#nnet_state{atom = Atom,
                     loop(State#nnet_state{lps = NewLPS})
             end;
 
+        % Act.
+        {act, F} ->
+            lists:foreach(fun(Neuron) -> Neuron ! {act, F} end, State#nnet_state.neurons),
+            loop(State);
+
         % Stop command.
         stop ->
-            lists:foreach(fun(Neuron) -> Neuron ! stop end, State#nnet_state.neurons),
-            ok;
+            lists:foreach(fun(Neuron) -> Neuron ! stop end, State#nnet_state.neurons);
 
         % Unknown command.
-        % Neuron dies.
         Any ->
             io:format("~w: unknown command ~w~n", [Atom, Any])
     end.

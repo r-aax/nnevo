@@ -64,6 +64,11 @@ loop(#neuron_state{atom = Atom,
                     loop(State#neuron_state{ips = NewIPS})
             end;
 
+        % Act.
+        {act, F} ->
+            F(State),
+            loop(State);
+
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
             loop(State#neuron_state{ips = utils:nones_signals(NewIPids),
@@ -85,7 +90,6 @@ loop(#neuron_state{atom = Atom,
             io:format("~w: stopped~n", [Atom]);
 
         % Unknown command.
-        % Neuron dies.
         Any ->
             io:format("~w: unknown command ~w~n", [Atom, Any])
     end.
