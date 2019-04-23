@@ -46,7 +46,7 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
     {
         atom = Atom,
         neurons = Neurons,
-        flayer = FLayer,
+        fps = utils:nones_signals(FLayer),
         lps = utils:nones_signals(LLayer),
         source = none
     },
@@ -113,7 +113,7 @@ create_multilayer(NNN, Layers) ->
 %% Neuronet infinite loop.
 %%   State - state.
 loop(#nnet_state{atom = Atom,
-                 flayer = FLayer,
+                 fps = FPS,
                  lps = LPS,
                  source = Source} = State) ->
 
@@ -122,7 +122,7 @@ loop(#nnet_state{atom = Atom,
 
         % Sense from outer world.
         {sense, From, Signal} ->
-            utils:send_array_to_array(forward, Signal, utils:nones_signals(FLayer)),
+            utils:send_array_to_array(forward, Signal, FPS),
             loop(State#nnet_state{source = From});
 
         % Forward propagation from the last layer.
