@@ -7,7 +7,8 @@
 -include("neuron.hrl").
 
 -export([start/0,
-         test_1_run/0, mnist_run/0]).
+         test_1_run/0, test_2_run/0, test_5_run/0,
+         mnist_run/0]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -53,6 +54,84 @@ test_1_run(Net, X, Y) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
+%% Test run.
+test_2_run() ->
+    Net = nnet:create_multilayer(1, [2, 2, 2]),
+    test_2_run(Net).
+
+%% @doc
+%% Test run.
+%%   Net - neuronet.
+test_2_run(Net) ->
+    X = [1.0, 1.0],
+    Y = [0.5, 0.3],
+    test_2_run(Net, X, Y).
+
+%% @doc
+%% Test run.
+%%   Net - neuronet,
+%%   X - input vector,
+%%   Y - output vector (right).
+test_2_run(Net, X, Y) ->
+    A = nnet:sense_forward(Net, X),
+    C = utils:cost(Y, A),
+
+    if
+        C < 0.00001 ->
+            io:format("test_1_run : learning is finished (cost = ~w)~n", [C]),
+            nnet:print(Net),
+            io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
+            halt();
+
+        true ->
+            io:format("test_1_run : cost = ~w~n", [C]),
+            nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
+            nnet:correct_weights_and_biases(Net, 0.01),
+            test_2_run(Net, X, Y)
+    end.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Test run.
+test_5_run() ->
+    Net = nnet:create_multilayer(1, [5, 5, 5, 5, 5]),
+    test_5_run(Net).
+
+%% @doc
+%% Test run.
+%%   Net - neuronet.
+test_5_run(Net) ->
+    X = [1.0, 2.0, 3.0, 4.0, 5.0],
+    Y = [0.9, 0.8, 0.7, 0.6, 0.5],
+    test_5_run(Net, X, Y).
+
+%% @doc
+%% Test run.
+%%   Net - neuronet,
+%%   X - input vector,
+%%   Y - output vector (right).
+test_5_run(Net, X, Y) ->
+    A = nnet:sense_forward(Net, X),
+    C = utils:cost(Y, A),
+
+    if
+        C < 0.00001 ->
+            io:format("test_1_run : learning is finished (cost = ~w)~n", [C]),
+            nnet:print(Net),
+            io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
+            halt();
+
+        true ->
+            io:format("test_1_run : cost = ~w~n", [C]),
+            nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
+            nnet:correct_weights_and_biases(Net, 0.01),
+            test_5_run(Net, X, Y)
+    end.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
 %% Run MNIST tests.
 mnist_run() ->
 
@@ -85,6 +164,6 @@ mnist_run(Net, B, C) ->
 %% @doc
 %% Start function.
 start() ->
-    test_1_run().
+    test_5_run().
 
 %---------------------------------------------------------------------------------------------------
