@@ -6,7 +6,7 @@
 
 -export([neuron_atom/2, nnet_atom/1,
          nones_signals/1, sigmoid/3,
-         send_one_to_array/2, send_array_to_array/2,
+         send_one_to_array/3, send_array_to_array/3,
          insert_signal/3, is_signals_ready/1,
          multilayer_nnet_edges/1,
          ms/0]).
@@ -69,19 +69,21 @@ sigmoid(PS, W, B) ->
 
 %% @doc
 %% Send one signal to array of pids.
+%%   A - atom,
 %%   S - signal,
 %%   Ps - pids.
-send_one_to_array(S, Ps) ->
-    lists:foreach(fun(P) -> P ! {sense, self(), S} end, Ps).
+send_one_to_array(A, S, Ps) ->
+    lists:foreach(fun(P) -> P ! {A, self(), S} end, Ps).
 
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
 %% Send array of signals to array of pids.
+%%   A - atom,
 %%   Ss - signals,
 %%   Ps - pids.
-send_array_to_array(Ss, Ps) ->
-    lists:foreach(fun({S, P}) -> P ! {sense, self(), S} end, lists:zip(Ss, Ps)).
+send_array_to_array(A, Ss, Ps) ->
+    lists:foreach(fun({S, P}) -> P ! {A, self(), S} end, lists:zip(Ss, Ps)).
 
 %---------------------------------------------------------------------------------------------------
 

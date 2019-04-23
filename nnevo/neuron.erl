@@ -46,8 +46,8 @@ loop(#neuron_state{atom = Atom,
     % Listen.
     receive
 
-        % Sense.
-        {sense, From, Signal} ->
+        % Forward propagation.
+        {forward, From, Signal} ->
 
             NewIPS = utils:insert_signal(IPS, From, Signal),
             IsSignalsReady = utils:is_signals_ready(NewIPS),
@@ -55,7 +55,7 @@ loop(#neuron_state{atom = Atom,
             if
                 IsSignalsReady ->
                     Out = utils:sigmoid(NewIPS, Weights, Bias),
-                    utils:send_one_to_array(Out, OPids),
+                    utils:send_one_to_array(forward, Out, OPids),
                     loop(State#neuron_state{ips = utils:nones_signals(IPS)});
 
                 true ->

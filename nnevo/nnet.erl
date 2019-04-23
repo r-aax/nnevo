@@ -121,12 +121,12 @@ loop(#nnet_state{atom = Atom,
     receive
 
         % Sense from outer world.
-        {out_sense, From, Signal} ->
-            utils:send_array_to_array(Signal, FLayer),
+        {sense, From, Signal} ->
+            utils:send_array_to_array(forward, Signal, FLayer),
             loop(State#nnet_state{source = From});
 
-        % Sense from last layer.
-        {sense, From, Signal} ->
+        % Forward propagation from the last layer.
+        {forward, From, Signal} ->
 
             NewPS = utils:insert_signal(PS, From, Signal),
             IsSignalsReady = utils:is_signals_ready(NewPS),
@@ -159,7 +159,7 @@ loop(#nnet_state{atom = Atom,
 %%   Pid - process id,
 %%   Signal - signal.
 sense(Pid, Signal) ->
-    Pid ! {out_sense, self(), Signal},
+    Pid ! {sense, self(), Signal},
     receive
         {response, Pid, Out} ->
             Out
