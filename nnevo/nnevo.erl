@@ -23,17 +23,29 @@ test_1_run() ->
 %% Test run.
 %%   Net - neuronet.
 test_1_run(Net) ->
-    I = [1.0],
-    F =
-        fun(#neuron_state{atom = Atom, z = Z, a = A, e = E}) ->
-            io:format("~w : z = ~w, a = ~w, e = ~w~n", [Atom, Z, A, E])
-        end,
-    SF = nnet:sense_forward(Net, I),
-    io:format("result : ~p~n", [SF]),
-    nnet:act(Net, F),
-    SB = nnet:sense_back(Net, [1.0]),
-    io:format("result : ~p~n", [SB]),
-    nnet:act(Net, F).
+    X = [1.0],
+    Y = [1.0],
+    test_1_run(Net, X, Y).
+
+%% @doc
+%% Test run.
+%%   Net - neuronet,
+%%   X - input vector,
+%%   Y - output vector (right).
+test_1_run(Net, X, Y) ->
+    A = nnet:sense_forward(Net, X),
+    C = utils:cost(Y, A),
+
+    if
+        C < 0.001 ->
+            io:format("test_1_run : learning is finished (cost = ~w)~n", [C]);
+
+        true ->
+            io:format("test_1_run : cost = ~w~n", [C]),
+            nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
+            nnet:correct_weights_and_biases(Net, 0.0001),
+            test_1_run(Net, X, Y)
+    end.
 
 %---------------------------------------------------------------------------------------------------
 

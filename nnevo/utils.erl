@@ -12,6 +12,7 @@
          send_one_to_array/3, send_array_to_array/3,
          insert_signal/3, is_signals_ready/1,
          multilayer_nnet_edges/1,
+         cost/2,
          ms/0]).
 
 %% @doc
@@ -156,5 +157,15 @@ multilayer_nnet_edges([F, S | T], N, R) ->
 ms() ->
     {Mg, Sc, Mc} = erlang:timestamp(),
     (Mg * ?MEGA + Sc) * ?MEGA + Mc.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Cost function.
+%%   Ys - array of correct values.
+%%   As - array of out values.
+cost(Ys, As) ->
+    S = lists:zipwith(fun(Y, A) -> (Y - A) * (Y - A) end, Ys, As),
+    0.5 * lists:sum(S).
 
 %---------------------------------------------------------------------------------------------------

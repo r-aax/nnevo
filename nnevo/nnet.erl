@@ -10,7 +10,8 @@
 -export([create/5, create_multilayer/2,
          loop/1,
          sense_forward/2, sense_back/2,
-         act/2]).
+         act/2,
+         correct_weights_and_biases/2]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -227,5 +228,14 @@ sense_back(Pid, Signal) ->
 %% Act.
 act(Pid, F) ->
     sync_call(act, Pid, F).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Correct weights and biases.
+%%   Net - neuronet,
+%%   Eta - learning speed.
+correct_weights_and_biases(_Net, _Eta) ->
+    ok.
 
 %---------------------------------------------------------------------------------------------------
