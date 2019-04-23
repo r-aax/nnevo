@@ -86,8 +86,9 @@ loop(#neuron_state{atom = Atom,
             end;
 
         % Act.
-        {act, F} ->
+        {act, From, F} ->
             F(State),
+            From ! {response, self(), ok},
             loop(State);
 
         % Set pids.

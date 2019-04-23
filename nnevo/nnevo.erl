@@ -7,7 +7,7 @@
 -include("neuron.hrl").
 
 -export([start/0,
-         test_run/0, mnist_run/0]).
+         test_1_run/0, mnist_run/0]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -15,25 +15,25 @@
 
 %% @doc
 %% Test run.
-test_run() ->
-    Net = nnet:create_multilayer(1, [2, 2, 2]),
-    test_run(Net).
+test_1_run() ->
+    Net = nnet:create_multilayer(1, [1, 1, 1]),
+    test_1_run(Net).
 
 %% @doc
 %% Test run.
 %%   Net - neuronet.
-test_run(Net) ->
-    I = [0.2, 0.3],
+test_1_run(Net) ->
+    I = [1.0],
     F =
         fun(#neuron_state{atom = Atom, z = Z, a = A, e = E}) ->
             io:format("~w : z = ~w, a = ~w, e = ~w~n", [Atom, Z, A, E])
         end,
     SF = nnet:sense_forward(Net, I),
     io:format("result : ~p~n", [SF]),
-    Net ! {act, F},
-    SB = nnet:sense_back(Net, [0.8, 0.7]),
+    nnet:act(Net, F),
+    SB = nnet:sense_back(Net, [1.0]),
     io:format("result : ~p~n", [SB]),
-    Net ! {act, F}.
+    nnet:act(Net, F).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -70,6 +70,6 @@ mnist_run(Net, B, C) ->
 %% @doc
 %% Start function.
 start() ->
-    test_run().
+    test_1_run().
 
 %---------------------------------------------------------------------------------------------------

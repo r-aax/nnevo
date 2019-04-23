@@ -4,6 +4,8 @@
 % Module name.
 -module(utils).
 
+-include("defines.hrl").
+
 -export([neuron_atom/2, nnet_atom/1,
          nones_signals/1, sigmoid/3,
          send_1toa/2, send_atoa/2,
@@ -144,8 +146,7 @@ multilayer_nnet_edges([F, S | T], N, R) ->
     % Edges set from layer F to layer S.
     Fs = lists:seq(N, N + F - 1),
     Ss = lists:seq(N + F, N + F + S - 1),
-    E = [{X, Y, 1.0} || X <- Fs, Y <- Ss],
-
+    E = [{X, Y, ?INI_WEIGHT} || X <- Fs, Y <- Ss],
     multilayer_nnet_edges([S | T], N + F, R ++ E).
 
 %---------------------------------------------------------------------------------------------------

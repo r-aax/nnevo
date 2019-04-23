@@ -5,10 +5,12 @@
 -module(nnet).
 
 -include("nnet.hrl").
+-include("defines.hrl").
 
 -export([create/5, create_multilayer/2,
          loop/1,
-         sense_forward/2, sense_back/2]).
+         sense_forward/2, sense_back/2,
+         act/2]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -57,7 +59,7 @@ create(NNN, Biases, FLayerSize, LLayerSize, Edges) ->
     lists:foreach
     (
         fun(FLE) ->
-            FLE ! {add_src, Pid, 1.0}
+            FLE ! {add_src, Pid, ?INI_WEIGHT}
         end,
         FLayer
     ),
@@ -102,7 +104,7 @@ create_multilayer(NNN, Layers) ->
 
     % Main constructor.
     create(NNN,
-           lists:duplicate(NeuronsCount, 1.0),
+           lists:duplicate(NeuronsCount, ?INI_BIAS),
            lists:nth(1, Layers),
            lists:last(Layers),
            utils:multilayer_nnet_edges(Layers)).
@@ -163,8 +165,19 @@ loop(#nnet_state{atom = Atom,
             end;
 
         % Act.
-        {act, F} ->
-            lists:foreach(fun(Neuron) -> Neuron ! {act, F} end, State#nnet_state.neurons),
+        {act, From, F} ->
+            lists:foreach
+            (
+                fun(Neuron) ->
+                    Neuron ! {act, self(), F},
+                    receive
+                        {response, Neuron, Res} ->
+                            Res
+                    end
+                end,
+                State#nnet_state.neurons
+            ),
+            From ! {response, self(), ok},
             loop(State);
 
         % Stop command.
@@ -179,15 +192,15 @@ loop(#nnet_state{atom = Atom,
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-%% Sense neuronet.
+%% Sync call.
 %%   Atom - atom,
 %%   Pid - process id,
-%%   Signal - signal.
-sense(Atom, Pid, Signal) ->
-    Pid ! {Atom, self(), Signal},
+%%   Data - data.
+sync_call(Atom, Pid, Data) ->
+    Pid ! {Atom, self(), Data},
     receive
-        {response, Pid, Out} ->
-            Out
+        {response, Pid, Res} ->
+            Res
     end.
 
 %---------------------------------------------------------------------------------------------------
@@ -197,7 +210,7 @@ sense(Atom, Pid, Signal) ->
 %%   Pid - process id,
 %%   Signal - signal.
 sense_forward(Pid, Signal) ->
-    sense(sense_forward, Pid, Signal).
+    sync_call(sense_forward, Pid, Signal).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -206,6 +219,13 @@ sense_forward(Pid, Signal) ->
 %%   Pid - process id,
 %%   Signal - signal.
 sense_back(Pid, Signal) ->
-    sense(sense_back, Pid, Signal).
+    sync_call(sense_back, Pid, Signal).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Act.
+act(Pid, F) ->
+    sync_call(act, Pid, F).
 
 %---------------------------------------------------------------------------------------------------
