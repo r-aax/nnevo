@@ -8,6 +8,7 @@
 
 -export([start/0,
          test_1_run/0, test_2_run/0, test_5_run/0,
+         test_mnist_1_run/0,
          mnist_run/0]).
 
 %---------------------------------------------------------------------------------------------------
@@ -78,13 +79,13 @@ test_2_run(Net, X, Y) ->
 
     if
         C < 0.00001 ->
-            io:format("test_1_run : learning is finished (cost = ~w)~n", [C]),
+            io:format("test_2_run : learning is finished (cost = ~w)~n", [C]),
             nnet:print(Net),
             io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
             halt();
 
         true ->
-            io:format("test_1_run : cost = ~w~n", [C]),
+            io:format("test_2_run : cost = ~w~n", [C]),
             nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
             nnet:correct_weights_and_biases(Net, 0.01),
             test_2_run(Net, X, Y)
@@ -117,16 +118,59 @@ test_5_run(Net, X, Y) ->
 
     if
         C < 0.00001 ->
-            io:format("test_1_run : learning is finished (cost = ~w)~n", [C]),
+            io:format("test_5_run : learning is finished (cost = ~w)~n", [C]),
             nnet:print(Net),
             io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
             halt();
 
         true ->
-            io:format("test_1_run : cost = ~w~n", [C]),
+            io:format("test_5_run : cost = ~w~n", [C]),
             nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
             nnet:correct_weights_and_biases(Net, 0.01),
             test_5_run(Net, X, Y)
+    end.
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Test run.
+test_mnist_1_run() ->
+    Net = nnet:create_multilayer(1, [784, 15, 10]),
+    test_mnist_1_run(Net).
+
+%% @doc
+%% Test run.
+%%   Net - neuronet.
+test_mnist_1_run(Net) ->
+    B = parser:mnist_get_binaries("../data/mnist/t10k-images.idx3-ubyte",
+                                  "../data/mnist/t10k-labels.idx1-ubyte"),
+    {{I, L}, _} = parser:mnist_get_next(B),
+    test_mnist_1_run(Net,
+                     lists:map(fun(X) -> X / 255.0 end, I),
+                     parser:mnist_label_to_prob(L)).
+
+%% @doc
+%% Test run.
+%%   Net - neuronet,
+%%   X - input vector,
+%%   Y - output vector (right).
+test_mnist_1_run(Net, X, Y) ->
+    A = nnet:sense_forward(Net, X),
+    C = utils:cost(Y, A),
+
+    if
+        C < 0.00001 ->
+            io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
+            io:format("test_mnist_1_run : learning is finished (cost = ~w)~n", [C]),
+            nnet:print(Net),
+            halt();
+
+        true ->
+            io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
+            io:format("test_mnist_1_run : cost = ~w~n", [C]),
+            nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
+            nnet:correct_weights_and_biases(Net, 0.01),
+            test_mnist_1_run(Net, X, Y)
     end.
 
 %---------------------------------------------------------------------------------------------------
@@ -164,6 +208,6 @@ mnist_run(Net, B, C) ->
 %% @doc
 %% Start function.
 start() ->
-    test_5_run().
+    test_mnist_1_run().
 
 %---------------------------------------------------------------------------------------------------

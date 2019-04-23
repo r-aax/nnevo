@@ -18,7 +18,7 @@
 %% Unsigned integer of 8 bits (big endian).
 -define(BYTE, 8/unsigned-big-integer).
 
--export([mnist_get_binaries/2, mnist_get_next/1]).
+-export([mnist_get_binaries/2, mnist_get_next/1, mnist_label_to_prob/1]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -51,10 +51,6 @@ mnist_get_binaries(ImagesFile, LabelsFile) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-
-%---------------------------------------------------------------------------------------------------
-
-%% @doc
 %% Get next cases of MNIST.
 %%   N - count of cases,
 %%   ImagesBin - images binary,
@@ -70,3 +66,20 @@ mnist_get_next({N,
     }.
 
 %---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Convert label to probabilities array.
+%%   L - label.
+mnist_label_to_prob(L) ->
+    lists:map
+    (
+        fun(X) ->
+            case X of
+                L ->
+                    1.0;
+                _ ->
+                    0.0
+            end
+        end,
+        lists:seq(0, 9)
+    ).

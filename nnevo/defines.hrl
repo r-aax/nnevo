@@ -7,7 +7,7 @@
 
 %% @doc
 %% Initial weight value.
--define(INI_WEIGHT, 1.0).
+-define(INI_WEIGHT, 0.001).
 
 %% @doc
 %% Initial bias value.
