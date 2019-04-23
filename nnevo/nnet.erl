@@ -12,7 +12,8 @@
          loop/1,
          sense_forward/2, sense_back/2,
          act/2,
-         correct_weights_and_biases/2]).
+         correct_weights_and_biases/2,
+         print/1]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -244,6 +245,19 @@ correct_weights_and_biases(Net, Eta) ->
             NW = lists:zipwith(fun(W1, DW1) -> W1 + Eta * DW1 end, W, DW),
             NB = B + Eta * DB,
             State#neuron_state{weights = NW, bias = NB}
+        end,
+    act(Net, F).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Print.
+%%   Net - neuronet.
+print(Net) ->
+    F =
+        fun(#neuron_state{atom = Atom, weights = Weights, bias = Bias} = State) ->
+            io:format("~w : w = ~w, b = ~w~n", [Atom, Weights, Bias]),
+            State
         end,
     act(Net, F).
 

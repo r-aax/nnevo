@@ -24,7 +24,7 @@ test_1_run() ->
 %%   Net - neuronet.
 test_1_run(Net) ->
     X = [1.0],
-    Y = [1.0],
+    Y = [0.1],
     test_1_run(Net, X, Y).
 
 %% @doc
@@ -37,14 +37,16 @@ test_1_run(Net, X, Y) ->
     C = utils:cost(Y, A),
 
     if
-        C < 0.001 ->
+        C < 0.00001 ->
             io:format("test_1_run : learning is finished (cost = ~w)~n", [C]),
+            nnet:print(Net),
+            io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
             halt();
 
         true ->
             io:format("test_1_run : cost = ~w~n", [C]),
             nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
-            nnet:correct_weights_and_biases(Net, 0.001),
+            nnet:correct_weights_and_biases(Net, 0.01),
             test_1_run(Net, X, Y)
     end.
 
