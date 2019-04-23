@@ -63,7 +63,9 @@ nones_signals(P) ->
 %%   B - bias.
 sigmoid(PS, W, B) ->
     D = lists:sum(lists:zipwith(fun({_, X}, Y) -> X * Y end, PS, W)),
-    mth:sigmoid(D + B).
+    Z = D + B,
+    A = mth:sigmoid(Z),
+    {Z, A}.
 
 %---------------------------------------------------------------------------------------------------
 
