@@ -6,6 +6,7 @@
 -record(neuron_state,
 {
     atom,    % neuron atom
+    s,       % saved signals
     weights, % weights
     bias,    % bias
     z,       % z value

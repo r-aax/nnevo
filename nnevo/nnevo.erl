@@ -38,12 +38,13 @@ test_1_run(Net, X, Y) ->
 
     if
         C < 0.001 ->
-            io:format("test_1_run : learning is finished (cost = ~w)~n", [C]);
+            io:format("test_1_run : learning is finished (cost = ~w)~n", [C]),
+            halt();
 
         true ->
             io:format("test_1_run : cost = ~w~n", [C]),
             nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
-            nnet:correct_weights_and_biases(Net, 0.0001),
+            nnet:correct_weights_and_biases(Net, 0.001),
             test_1_run(Net, X, Y)
     end.
 

@@ -5,6 +5,7 @@
 -module(nnet).
 
 -include("nnet.hrl").
+-include("neuron.hrl").
 -include("defines.hrl").
 
 -export([create/5, create_multilayer/2,
@@ -235,7 +236,15 @@ act(Pid, F) ->
 %% Correct weights and biases.
 %%   Net - neuronet,
 %%   Eta - learning speed.
-correct_weights_and_biases(_Net, _Eta) ->
-    ok.
+correct_weights_and_biases(Net, Eta) ->
+    F =
+        fun(#neuron_state{s = S, weights = W, bias = B, e = E} = State) ->
+            DW = lists:map(fun(S1) -> S1 * E end, S),
+            DB = E,
+            NW = lists:zipwith(fun(W1, DW1) -> W1 + Eta * DW1 end, W, DW),
+            NB = B + Eta * DB,
+            State#neuron_state{weights = NW, bias = NB}
+        end,
+    act(Net, F).
 
 %---------------------------------------------------------------------------------------------------

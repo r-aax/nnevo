@@ -23,6 +23,7 @@ create(NNN, NN, Weights, Bias) ->
     State = #neuron_state
     {
         atom = Atom,
+        s = [],
         weights = Weights,
         bias = Bias,
         z = 0.0,
@@ -60,7 +61,8 @@ loop(#neuron_state{atom = Atom,
                 IsSignalsReady ->
                     {NewZ, NewA} = utils:sigmoid(NewIPS, Weights, Bias),
                     utils:send_one_to_array(forward, NewA, OPS),
-                    loop(State#neuron_state{z = NewZ, a = NewA, ips = utils:nones_signals(IPS)});
+                    {_, S} = lists:unzip(NewIPS),
+                    loop(State#neuron_state{s = S, z = NewZ, a = NewA, ips = utils:nones_signals(IPS)});
 
                 true ->
                     loop(State#neuron_state{ips = NewIPS})
@@ -87,9 +89,9 @@ loop(#neuron_state{atom = Atom,
 
         % Act.
         {act, From, F} ->
-            F(State),
+            NewState = F(State),
             From ! {response, self(), ok},
-            loop(State);
+            loop(NewState);
 
         % Set pids.
         {set_pids, NewIPids, NewOPids} ->
