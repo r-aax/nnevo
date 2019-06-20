@@ -13,7 +13,8 @@
          insert_signal/3, is_signals_ready/1,
          multilayer_nnet_edges/1,
          cost/2,
-         ms/0]).
+         ms/0,
+         change_float/2]).
 
 %% @doc
 %% Megaseconds.
@@ -169,5 +170,14 @@ ms() ->
 cost(Ys, As) ->
     S = lists:zipwith(fun(Y, A) -> (Y - A) * (Y - A) end, Ys, As),
     0.5 * lists:sum(S).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Change float value.
+change_float(F, {add, V}) ->
+    F + V;
+change_float(F, {mul, V}) ->
+    F * V.
 
 %---------------------------------------------------------------------------------------------------

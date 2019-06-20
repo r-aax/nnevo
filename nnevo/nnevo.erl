@@ -147,9 +147,17 @@ mnist_run(Net, B, C) ->
 %% @doc
 %% Genotype test.
 genotype_test_run() ->
-    Net = nnet:create_from_genotype(1, genotype:empty(3, 3, atoa)),
-    nnet:print(Net),
-    single_learn(Net, [0.1, 0.2, 0.3], [0.3, 0.2, 0.1]).
+    G = genotype:empty(3, 3, atoa)
+        ++
+        [
+            {select_nodes, [2]},
+            {set_node_bias, {add, 0.1}},
+            {select_edges, [{2, 4}]},
+            {set_edge_weight, {mul, 2.0}}
+        ],
+    Net = nnet:create_from_genotype(1, G),
+    nnet:print(Net).
+    %single_learn(Net, [0.1, 0.2, 0.3], [0.3, 0.2, 0.1]).
 
 %---------------------------------------------------------------------------------------------------
 
