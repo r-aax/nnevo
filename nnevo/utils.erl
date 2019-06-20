@@ -78,7 +78,7 @@ sigmoid(PS, W, B) ->
 %%   S - signal,
 %%   Ps - pids.
 send_1toa(S, Ps) ->
-    lists:foreach(fun(P) -> P ! S end, Ps).
+    [P ! S || P <- Ps].
 
 %---------------------------------------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ send_1toa(S, Ps) ->
 %%   Ss - signals,
 %%   Ps - pids.
 send_atoa(Ss, Ps) ->
-    lists:foreach(fun({S, P}) -> P ! S end, lists:zip(Ss, Ps)).
+    [P ! S || {P, S} <- lists:zip(Ps, Ss)].
 
 %---------------------------------------------------------------------------------------------------
 
@@ -95,9 +95,10 @@ send_atoa(Ss, Ps) ->
 %% Send one signal to array of pids.
 %%   A - atom,
 %%   S - signal,
-%%   Ps - pids/signal tupples.
-send_one_to_array(A, S, Ps) ->
-    lists:foreach(fun({P, _}) -> P ! {A, self(), S} end, Ps).
+%%   PSs - pids/signal tupples.
+send_one_to_array(A, S, PSs) ->
+    {Ps, _} = lists:unzip(PSs),
+    send_1toa({A, self(), S}, Ps).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -105,9 +106,10 @@ send_one_to_array(A, S, Ps) ->
 %% Send array of signals to array of pids.
 %%   A - atom,
 %%   Ss - signals,
-%%   Ps - pid/signal tupples.
-send_array_to_array(A, Ss, Ps) ->
-    lists:foreach(fun({S, {P, _}}) -> P ! {A, self(), S} end, lists:zip(Ss, Ps)).
+%%   PSs - pid/signal tupples.
+send_array_to_array(A, Ss, PSs) ->
+    {Ps, _} = lists:unzip(PSs),
+    send_atoa([{A, self(), S} || S <- Ss], Ps).
 
 %---------------------------------------------------------------------------------------------------
 
