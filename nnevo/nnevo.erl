@@ -5,6 +5,7 @@
 -module(nnevo).
 
 -include("neuron.hrl").
+-include("defines.hrl").
 
 -export([start/0,
          test_1_run/0, test_2_run/0, test_5_run/0,
@@ -48,7 +49,7 @@ test_1_run(Net, X, Y) ->
         true ->
             io:format("test_1_run : cost = ~w~n", [C]),
             nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
-            nnet:correct_weights_and_biases(Net, 0.01),
+            nnet:correct_weights_and_biases(Net, ?LEARNING_SPEED_TAU),
             test_1_run(Net, X, Y)
     end.
 
@@ -87,7 +88,7 @@ test_2_run(Net, X, Y) ->
         true ->
             io:format("test_2_run : cost = ~w~n", [C]),
             nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
-            nnet:correct_weights_and_biases(Net, 0.01),
+            nnet:correct_weights_and_biases(Net, ?LEARNING_SPEED_TAU),
             test_2_run(Net, X, Y)
     end.
 
@@ -126,7 +127,7 @@ test_5_run(Net, X, Y) ->
         true ->
             io:format("test_5_run : cost = ~w~n", [C]),
             nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
-            nnet:correct_weights_and_biases(Net, 0.01),
+            nnet:correct_weights_and_biases(Net, ?LEARNING_SPEED_TAU),
             test_5_run(Net, X, Y)
     end.
 
@@ -155,7 +156,10 @@ test_mnist_1_run(Net) ->
 %%   X - input vector,
 %%   Y - output vector (right).
 test_mnist_1_run(Net, X, Y) ->
+    ForwardMs0 = utils:ms(),
     A = nnet:sense_forward(Net, X),
+    ForwardMs1 = utils:ms(),
+    io:format("                   forward - ~w ms~n", [ForwardMs1 - ForwardMs0]),
     C = utils:cost(Y, A),
 
     if
@@ -166,10 +170,16 @@ test_mnist_1_run(Net, X, Y) ->
             halt();
 
         true ->
-            io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
+            %io:format("X = ~w, Y = ~w, A = ~w~n", [X, Y, A]),
             io:format("test_mnist_1_run : cost = ~w~n", [C]),
+            BackMs0 = utils:ms(),
             nnet:sense_back(Net, lists:zipwith(fun(Y1, A1) -> Y1 - A1 end, Y, A)),
-            nnet:correct_weights_and_biases(Net, 0.01),
+            BackMs1 = utils:ms(),
+            io:format("                   back    - ~w ms~n", [BackMs1 - BackMs0]),
+            CorrectMs0 = utils:ms(),
+            nnet:correct_weights_and_biases(Net, ?LEARNING_SPEED_TAU),
+            CorrectMs1 = utils:ms(),
+            io:format("                   correct - ~w ms~n", [CorrectMs1 - CorrectMs0]),
             test_mnist_1_run(Net, X, Y)
     end.
 

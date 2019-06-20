@@ -12,3 +12,7 @@
 %% @doc
 %% Initial bias value.
 -define(INI_BIAS, 0.0).
+
+%% @doc
+%% Learning speed.
+-define(LEARNING_SPEED_TAU, 0.1).
