@@ -8,7 +8,7 @@
 -include("neuron.hrl").
 -include("defines.hrl").
 
--export([create/5, create_multilayer/2,
+-export([create/5, create_multilayer/2, create_from_genotype/2,
          loop/1,
          sense_forward/2, sense_back/2,
          act/2,
@@ -111,6 +111,37 @@ create_multilayer(NNN, Layers) ->
            lists:nth(1, Layers),
            lists:last(Layers),
            utils:multilayer_nnet_edges(Layers)).
+
+%---------------------------------------------------------------------------------------------------
+
+%% @doc
+%% Create neuronet from genotype.
+%%   NNN - neuronet number,
+%%%  G - genotype.
+create_from_genotype(NNN, G) ->
+
+    % Genotype always begins from header.
+    [{genotype, FirstLayerSize, LastLayerSize, FLLayersConnectionType} | _] = G,
+
+    % Neurons count is just sum of first and last layers sizes.
+    NeuronsCount = FirstLayerSize + LastLayerSize,
+
+    % Construct edges.
+    Edges =
+        case FLLayersConnectionType of
+            atoa ->
+                % All to all connection.
+                FDiap = lists:seq(1, FirstLayerSize),
+                LDiap = lists:seq(FirstLayerSize + 1, NeuronsCount),
+                [{X, Y, ?INI_WEIGHT} || X <- FDiap, Y <- LDiap]
+        end,
+
+    % Main constructor.
+    create(NNN,
+           lists:duplicate(NeuronsCount, ?INI_BIAS),
+           FirstLayerSize,
+           LastLayerSize,
+           Edges).
 
 %---------------------------------------------------------------------------------------------------
 
