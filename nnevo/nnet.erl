@@ -8,8 +8,7 @@
 -include("neuron.hrl").
 -include("defines.hrl").
 
--export([create/5, create_multilayer/2, create_from_genotype/2,
-         modify/4,
+-export([create/5, create_multilayer/2,
          loop/1,
          sense_forward/2, sense_back/2,
          act/2,
@@ -112,90 +111,6 @@ create_multilayer(NNN, Layers) ->
            lists:nth(1, Layers),
            lists:last(Layers),
            utils:multilayer_nnet_edges(Layers)).
-
-%---------------------------------------------------------------------------------------------------
-
-%% @doc
-%% Create neuronet from genotype.
-%%   NNN - neuronet number,
-%%%  G - genotype.
-create_from_genotype(NNN, G) ->
-
-    % Genotype always begins from header.
-    [{genotype, FirstLayerSize, LastLayerSize, FLLayersConnectionType} | T] = G,
-
-    % Neurons count is just sum of first and last layers sizes.
-    NeuronsCount = FirstLayerSize + LastLayerSize,
-    Biases = lists:duplicate(NeuronsCount, ?INI_BIAS),
-
-    % Construct edges.
-    Edges =
-        case FLLayersConnectionType of
-            atoa ->
-                % All to all connection.
-                FDiap = lists:seq(1, FirstLayerSize),
-                LDiap = lists:seq(FirstLayerSize + 1, NeuronsCount),
-                [{X, Y, ?INI_WEIGHT} || X <- FDiap, Y <- LDiap]
-        end,
-
-    {FinBiases, FinEdges} = nnet:modify(T, Biases, {FirstLayerSize, LastLayerSize}, Edges),
-
-    % Main constructor.
-    create(NNN,
-           FinBiases,
-           FirstLayerSize,
-           LastLayerSize,
-           FinEdges).
-
-%---------------------------------------------------------------------------------------------------
-
-%% @doc
-%% Modify neuronet from genotype.
-%%   G - genotype,
-%%   Biases - biases,
-%%   S - first and last layer sizes,
-%%   Edges - edges.
-modify(G, Biases, S, Edges) ->
-    modify(G, Biases, S, Edges, [], []).
-
-%% @doc
-%% Modify neuronet from genotype.
-%%   G - genotype,
-%%   Biases - biases,
-%%   S - first and last layer sizes,
-%%   Edges - edges,
-%%   Ns - selected nodes,
-%%   Es - selected edges.
-modify([], Biases, _, Edges, _, _) ->
-    {Biases, Edges};
-modify([H | T], Biases, S, Edges, Ns, Es) ->
-
-    case H of
-        {select_nodes, SelNodes} ->
-            modify(T, Biases, S, Edges, Ns ++ SelNodes, Es);
-
-        {select_edges, SelEdges} ->
-            modify(T, Biases, S, Edges, Ns, Es ++ SelEdges);
-
-        {set_node_bias, ChangeBias} ->
-            [N | NsT] = Ns,
-            Bias = lists:nth(N, Biases),
-            NewBiases = xlists:replace(Biases, N, utils:change_float(Bias, ChangeBias)),
-            modify(T, NewBiases, S, Edges, NsT, Es);
-
-        {set_edge_weight, ChangeWeight} ->
-            [{Ex, Ey} | EsT] = Es,
-            NewEdges =
-                xlists:filter_map
-                (
-                    Edges,
-                    fun({X, Y, _}) -> (X == Ex) and (Y == Ey) end,
-                    fun({X, Y, Weight}) ->
-                        {X, Y, utils:change_float(Weight, ChangeWeight)}
-                    end
-                ),
-            modify(T, Biases, S, NewEdges, Ns, EsT)
-    end.
 
 %---------------------------------------------------------------------------------------------------
 

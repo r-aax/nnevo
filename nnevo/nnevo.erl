@@ -11,8 +11,7 @@
          single_learn/3,
          test_1_run/0, test_2_run/0, test_5_run/0,
          test_mnist_1_run/0,
-         mnist_run/0,
-         genotype_test_run/0]).
+         mnist_run/0]).
 
 %---------------------------------------------------------------------------------------------------
 % Functions.
@@ -50,48 +49,27 @@ single_learn(Net, X, Y) ->
 %% @doc
 %% Test run.
 test_1_run() ->
-    Net = nnet:create_multilayer(1, [1, 1, 1]),
-    test_1_run(Net).
-
-%% @doc
-%% Test run.
-%%   Net - neuronet.
-test_1_run(Net) ->
-    X = [1.0],
-    Y = [0.1],
-    single_learn(Net, X, Y).
+    single_learn(nnet:create_multilayer(1, [1, 1, 1]),
+                 [1.0],
+                 [0.1]).
 
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
 %% Test run.
 test_2_run() ->
-    Net = nnet:create_multilayer(1, [2, 2, 2]),
-    test_2_run(Net).
-
-%% @doc
-%% Test run.
-%%   Net - neuronet.
-test_2_run(Net) ->
-    X = [1.0, 1.0],
-    Y = [0.5, 0.3],
-    single_learn(Net, X, Y).
+    single_learn(nnet:create_multilayer(1, [2, 2, 2]),
+                 [1.0, 1.0],
+                 [0.5, 0.3]).
 
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
 %% Test run.
 test_5_run() ->
-    Net = nnet:create_multilayer(1, [5, 5, 5, 5, 5]),
-    test_5_run(Net).
-
-%% @doc
-%% Test run.
-%%   Net - neuronet.
-test_5_run(Net) ->
-    X = [1.0, 2.0, 3.0, 4.0, 5.0],
-    Y = [0.9, 0.8, 0.7, 0.6, 0.5],
-    single_learn(Net, X, Y).
+    single_learn(nnet:create_multilayer(1, [5, 5, 5, 5, 5]),
+                 [1.0, 2.0, 3.0, 4.0, 5.0],
+                 [0.9, 0.8, 0.7, 0.6, 0.5]).
 
 %---------------------------------------------------------------------------------------------------
 
@@ -99,12 +77,6 @@ test_5_run(Net) ->
 %% Test run.
 test_mnist_1_run() ->
     Net = nnet:create_multilayer(1, [784, 15, 10]),
-    test_mnist_1_run(Net).
-
-%% @doc
-%% Test run.
-%%   Net - neuronet.
-test_mnist_1_run(Net) ->
     B = parser:mnist_get_binaries("../data/mnist/t10k-images.idx3-ubyte",
                                   "../data/mnist/t10k-labels.idx1-ubyte"),
     {{I, L}, _} = parser:mnist_get_next(B),
@@ -145,25 +117,8 @@ mnist_run(Net, B, C) ->
 %---------------------------------------------------------------------------------------------------
 
 %% @doc
-%% Genotype test.
-genotype_test_run() ->
-    G = genotype:empty(3, 3, atoa)
-        ++
-        [
-            {select_nodes, [2]},
-            {set_node_bias, {add, 0.1}},
-            {select_edges, [{2, 4}]},
-            {set_edge_weight, {mul, 2.0}}
-        ],
-    Net = nnet:create_from_genotype(1, G),
-    nnet:print(Net).
-    %single_learn(Net, [0.1, 0.2, 0.3], [0.3, 0.2, 0.1]).
-
-%---------------------------------------------------------------------------------------------------
-
-%% @doc
 %% Start function.
 start() ->
-    genotype_test_run().
+    test_mnist_1_run().
 
 %---------------------------------------------------------------------------------------------------
